@@ -9,6 +9,10 @@ dist/
 .env.local
 .env.*.local
 
+# Private notes / chat exports
+conversation.md
+*.private.md
+
 # Editor / OS
 .DS_Store
 Thumbs.db
