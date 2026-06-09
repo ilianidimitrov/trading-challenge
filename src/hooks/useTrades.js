@@ -4,6 +4,7 @@ import { computeBalance } from "../utils/balance";
 import { attachBalances } from "../utils/tradeBalances";
 import { validateTrade } from "../utils/tradeValidation";
 import { notifyTelegram } from "../lib/telegram";
+import { formatPairDisplay } from "../utils/pnlCalc";
 
 const STORAGE_KEY = "tc_trades";
 
@@ -17,18 +18,7 @@ export function useTrades() {
     const validation = validateTrade(form, balanceBefore);
     if (!validation.valid) return validation;
 
-    const trade = {
-      ...form,
-      id: Date.now(),
-      pnl: parseFloat(form.pnl),
-      entry: form.entry || "",
-      exit: form.exit || "",
-      sl: form.sl || "",
-      tp: form.tp || "",
-      riskPct: form.riskPct ? parseFloat(form.riskPct) : null,
-      date: new Date().toLocaleDateString("bg-BG"),
-      createdAt: Date.now(),
-    };
+    const trade = normalizeTrade(form);
 
     setRawTrades(prev => [trade, ...prev]);
     notifyTelegram(trade, balanceBefore, balanceBefore + trade.pnl);
@@ -40,16 +30,7 @@ export function useTrades() {
     if (!validation.valid) return validation;
 
     setRawTrades(prev =>
-      prev.map(t =>
-        t.id === id
-          ? {
-              ...t,
-              ...form,
-              pnl: parseFloat(form.pnl),
-              riskPct: form.riskPct ? parseFloat(form.riskPct) : null,
-            }
-          : t
-      )
+      prev.map(t => t.id === id ? { ...t, ...normalizeTrade(form, id, t.createdAt) } : t)
     );
     return validation;
   }, [setRawTrades]);
@@ -81,5 +62,25 @@ export function useTrades() {
     deleteTrade,
     replaceAllTrades,
     getBalanceBeforeTrade,
+  };
+}
+
+function normalizeTrade(form, id = Date.now(), createdAt = Date.now()) {
+  return {
+    ...form,
+    id,
+    pair: formatPairDisplay(form.pair),
+    marketType: form.marketType || "USDT-M",
+    pnl: parseFloat(form.pnl),
+    entry: form.entry || "",
+    exit: form.exit || "",
+    sl: form.sl || "",
+    tp: form.tp || "",
+    quantity: form.quantity || "",
+    positionUsdt: form.positionUsdt || "",
+    leverage: form.leverage || "",
+    riskPct: form.riskPct ? parseFloat(form.riskPct) : null,
+    date: new Date(createdAt).toLocaleDateString("bg-BG"),
+    createdAt,
   };
 }

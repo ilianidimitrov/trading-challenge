@@ -69,6 +69,10 @@ export function AuthProvider({ children }) {
     setProfile(null);
   };
 
+  const refreshProfile = useCallback(async () => {
+    if (user?.id) await loadProfile(user.id);
+  }, [user?.id, loadProfile]);
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -77,6 +81,7 @@ export function AuthProvider({ children }) {
       signUp,
       signIn,
       signOut,
+      refreshProfile,
       isConfigured: isSupabaseConfigured(),
     }}>
       {children}

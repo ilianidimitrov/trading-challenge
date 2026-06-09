@@ -31,13 +31,17 @@ export async function importTradesJson(file) {
 
   return raw.map((t, i) => ({
     id: t.id || Date.now() + i,
-    pair: t.pair || "",
+    pair: t.pair || "BTCUSDT",
+    marketType: t.marketType ?? "USDT-M",
     dir: t.dir || "LONG",
     result: t.result || "WIN",
     entry: t.entry ?? "",
     exit: t.exit ?? "",
     sl: t.sl ?? "",
     tp: t.tp ?? "",
+    quantity: t.quantity ?? "",
+    positionUsdt: t.positionUsdt ?? "",
+    leverage: t.leverage ?? "",
     pnl: parseFloat(t.pnl) || 0,
     rr: t.rr ?? "",
     riskPct: t.riskPct ?? "",

@@ -3,6 +3,8 @@ import { C } from "./constants/palette";
 import { PHASES } from "./constants/phases";
 import { getActivePhase } from "./utils/format";
 import { useTradeSync } from "./hooks/useTradeSync";
+import { useKillSwitchNotifications } from "./hooks/useKillSwitchNotifications";
+import { useAuth } from "./contexts/AuthContext";
 import { Header } from "./components/layout/Header";
 import { TabNav } from "./components/layout/TabNav";
 import { AuthBar } from "./components/layout/AuthBar";
@@ -10,11 +12,14 @@ import { PhaseCard } from "./components/PhaseCard";
 import { RRPanel } from "./components/RRPanel";
 import { Roadmap } from "./components/Roadmap";
 import { Journal } from "./components/Journal";
+import { Dashboard } from "./components/Dashboard";
 import { Leaderboard } from "./components/Leaderboard";
 import { Profile } from "./components/Profile";
 import { LoginModal } from "./components/auth/LoginModal";
+import { SettingsModal } from "./components/auth/SettingsModal";
 
 const TABS = [
+  { key: "dashboard",   label: "Dashboard" },
   { key: "phases",      label: "Phases" },
   { key: "rr",          label: "RR / Rules" },
   { key: "roadmap",     label: "Roadmap" },
@@ -23,18 +28,23 @@ const TABS = [
 ];
 
 export default function App() {
-  const [tab, setTab] = useState("phases");
+  const [tab, setTab] = useState("dashboard");
   const [selId, setSelId] = useState(1);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileUserId, setProfileUserId] = useState(null);
 
+  const { profile } = useAuth();
   const {
     trades, balance, addTrade, updateTrade, deleteTrade,
-    replaceAllTrades,
+    replaceAllTrades, getBalanceBeforeTrade,
     useCloud, syncing, importLocalToCloud, localTradeCount,
   } = useTradeSync();
 
+  useKillSwitchNotifications(trades, balance);
+
   const active = getActivePhase(PHASES, balance);
+  const profileName = profile?.display_name || profile?.username || "Trader";
   const sel = PHASES.find(p => p.id === selId) || PHASES[0];
 
   async function handleSave(_id, form, balanceBefore) {
@@ -51,9 +61,20 @@ export default function App() {
       fontFamily: "'Inter', system-ui, sans-serif",
       color: C.text, maxWidth: 960, margin: "0 auto", padding: "32px 20px 80px",
     }}>
-      <AuthBar onLoginClick={() => setLoginOpen(true)} />
+      <AuthBar
+        onLoginClick={() => setLoginOpen(true)}
+        onSettingsClick={() => setSettingsOpen(true)}
+      />
       <Header bal={balance} active={active} />
       <TabNav tabs={TABS} active={tab} onChange={key => { setTab(key); setProfileUserId(null); }} />
+
+      {tab === "dashboard" && (
+        <Dashboard
+          trades={trades}
+          balance={balance}
+          profileName={profileName}
+        />
+      )}
 
       {tab === "phases" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -94,6 +115,7 @@ export default function App() {
           onUpdate={handleUpdate}
           onDelete={deleteTrade}
           onImport={replaceAllTrades}
+          getBalanceBeforeTrade={getBalanceBeforeTrade}
           useCloud={useCloud}
           syncing={syncing}
           importLocalToCloud={importLocalToCloud}
@@ -108,6 +130,7 @@ export default function App() {
       )}
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

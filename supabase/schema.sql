@@ -38,6 +38,10 @@ create table if not exists public.trades (
   setup text,
   notes text,
   screenshot_url text,
+  market_type text default 'USDT-M',
+  leverage numeric,
+  quantity numeric,
+  position_usdt numeric,
   created_at timestamptz default now()
 );
 

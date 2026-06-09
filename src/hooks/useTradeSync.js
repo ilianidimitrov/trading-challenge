@@ -11,12 +11,13 @@ import { attachBalances } from "../utils/tradeBalances";
 import { computeBalance } from "../utils/balance";
 import { validateTrade } from "../utils/tradeValidation";
 import { notifyTelegram } from "../lib/telegram";
+import { formatPairDisplay } from "../utils/pnlCalc";
 
 /**
  * Unified trades hook: localStorage when offline, Supabase when logged in.
  */
 export function useTradeSync() {
-  const { user, isConfigured } = useAuth();
+  const { user, profile, isConfigured } = useAuth();
   const local = useTrades();
   const [cloudTrades, setCloudTrades] = useState([]);
   const [syncing, setSyncing] = useState(false);
@@ -40,24 +41,13 @@ export function useTradeSync() {
     const validation = validateTrade(form, balanceBefore);
     if (!validation.valid) return validation;
 
-    const trade = {
-      ...form,
-      id: Date.now(),
-      pnl: parseFloat(form.pnl),
-      entry: form.entry || "",
-      exit: form.exit || "",
-      sl: form.sl || "",
-      tp: form.tp || "",
-      riskPct: form.riskPct ? parseFloat(form.riskPct) : null,
-      date: new Date().toLocaleDateString("bg-BG"),
-      createdAt: Date.now(),
-    };
+    const trade = normalizeTrade(form);
 
     if (useCloud) {
       try {
         const saved = await insertTrade(user.id, trade);
         setCloudTrades(prev => [saved, ...prev]);
-        notifyTelegram(saved, balanceBefore, balanceBefore + saved.pnl);
+        notifyTelegram(saved, balanceBefore, balanceBefore + saved.pnl, profile?.display_name || profile?.username);
       } catch (err) {
         validation.errors.push(err.message);
         validation.valid = false;
@@ -67,7 +57,7 @@ export function useTradeSync() {
       local.addTrade(form, balanceBefore);
     }
     return validation;
-  }, [useCloud, user, local]);
+  }, [useCloud, user, profile, local]);
 
   const updateTrade = useCallback(async (id, form, balanceBeforeEdit) => {
     const validation = validateTrade(form, balanceBeforeEdit);
@@ -145,5 +135,25 @@ export function useTradeSync() {
     syncing,
     importLocalToCloud,
     localTradeCount: local.rawTrades.length,
+  };
+}
+
+function normalizeTrade(form, id = Date.now(), createdAt = Date.now()) {
+  return {
+    ...form,
+    id,
+    pair: formatPairDisplay(form.pair),
+    marketType: form.marketType || "USDT-M",
+    pnl: parseFloat(form.pnl),
+    entry: form.entry || "",
+    exit: form.exit || "",
+    sl: form.sl || "",
+    tp: form.tp || "",
+    quantity: form.quantity || "",
+    positionUsdt: form.positionUsdt || "",
+    leverage: form.leverage || "",
+    riskPct: form.riskPct ? parseFloat(form.riskPct) : null,
+    date: new Date(createdAt).toLocaleDateString("bg-BG"),
+    createdAt,
   };
 }

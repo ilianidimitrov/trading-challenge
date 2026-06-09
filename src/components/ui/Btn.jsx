@@ -1,6 +1,6 @@
 import { C } from "../../constants/palette";
 
-export function Btn({ onClick, children, variant = "default", type = "button", disabled = false }) {
+export function Btn({ onClick, children, variant = "default", type = "button", disabled = false, ...rest }) {
   const styles = {
     default: { background: C.surface, border: `1px solid ${C.borderHi}`, color: C.text },
     primary: { background: C.green, border: "none", color: "#000" },
@@ -12,6 +12,7 @@ export function Btn({ onClick, children, variant = "default", type = "button", d
       type={type}
       onClick={onClick}
       disabled={disabled}
+      {...rest}
       style={{
         ...styles[variant],
         borderRadius: 6, padding: "9px 16px", fontSize: 13,

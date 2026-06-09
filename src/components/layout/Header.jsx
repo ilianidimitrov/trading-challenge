@@ -14,15 +14,15 @@ export function Header({ bal, active }) {
           marginBottom: 20, flexWrap: "wrap", gap: 16,
         }}>
           <div>
-            <Label color={C.muted}>Trading Challenge</Label>
+            <Label color={C.muted}>Binance Futures Challenge</Label>
             <div style={{
               color: C.bright, fontSize: 28, fontWeight: 900, letterSpacing: -1,
               marginTop: 4, fontVariantNumeric: "tabular-nums",
             }}>
-              $5 <span style={{ color: C.muted, fontWeight: 300 }}>→</span> $1,000,000
+              $5 <span style={{ color: C.muted, fontWeight: 300 }}>→</span> $1M USDT
             </div>
             <div style={{ color: C.dim, fontSize: 12, marginTop: 4 }}>
-              10 phases · 200,000× growth · {PHASES.length} risk tiers
+              Binance USDT-M · 10 phases · {PHASES.length} risk tiers
             </div>
           </div>
           <div style={{ textAlign: "right" }}>

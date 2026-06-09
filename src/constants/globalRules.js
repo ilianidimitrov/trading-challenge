@@ -1,10 +1,10 @@
 export const GLOBAL_RULES = [
-  { title: "Risk First",   text: "Рискът е единственото, което контролираш. Всичко друго е вероятност." },
-  { title: "Journal",      text: "Записвай всеки трейд. Без данни няма подобрение — само предположения." },
-  { title: "Psychology",   text: "Revenge trading = 24-часова пауза. Euphoria при winning streak = намали размера наполовина." },
-  { title: "Confluence",   text: "Минимум 3 независими потвърждения: структура + тренд + обем/индикатор." },
-  { title: "Timeframes",   text: "Анализ: Daily / 4H. Вход: 1H / 15M. Никога под 15M за вход." },
-  { title: "Kill Switch",  text: "Дневна загуба над 10% или 3 поредни загуби → края на деня." },
-  { title: "Size Scaling", text: "Увеличавай размера само след 20 трейда с положителна очаквана стойност." },
-  { title: "Capital Rule", text: "Никога не трейдвай с пари, загубата на които би повлияла на живота ти." },
+  { title: "Risk First",      text: "Рискът в USDT е единственото, което контролираш. Funding rate и leverage са вероятност." },
+  { title: "Journal",         text: "Записвай всеки Binance трейд с entry, SL, TP и leverage. Без данни — само guess." },
+  { title: "Psychology",      text: "Revenge trade след liquidation = 24ч пауза. Winning streak = намали leverage, не го качвай." },
+  { title: "Confluence",      text: "Минимум 3 потвърждения: market structure + HTF trend + volume/OB/FVG." },
+  { title: "Timeframes",      text: "Анализ: Daily / 4H. Вход: 1H / 15M на Binance Futures chart." },
+  { title: "Kill Switch",     text: "Дневна загуба над 10% от futures wallet или 3 поредни загуби → край на сесията." },
+  { title: "Size Scaling",    text: "Увеличавай notional само след 20 трейда с положителна expectancy на USDT-M." },
+  { title: "Capital Rule",    text: "Търгувай само с USDT, които можеш да загубиш без да пипаш living expenses." },
 ];
