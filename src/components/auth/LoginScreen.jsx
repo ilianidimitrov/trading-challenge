@@ -4,9 +4,9 @@ import { fmt } from "../../utils/format";
 import { LoginForm } from "./LoginForm";
 
 const FEATURES = [
-  { tag: "JNL", title: "Journal", desc: "USDT-M трейдове с SL/TP и PnL", accent: C.green },
-  { tag: "TOP", title: "Leaderboard", desc: "Класация на общността", accent: C.yellow },
-  { tag: "P10", title: "10 Phases", desc: `${fmt(STARTING_BALANCE)} → ${fmt(TARGET_BALANCE)} с risk rules`, accent: C.blue },
+  { tag: "JNL", title: "Journal", desc: "USDT-M trades with SL/TP and PnL", accent: C.green },
+  { tag: "TOP", title: "Leaderboard", desc: "Community rankings", accent: C.yellow },
+  { tag: "P10", title: "10 Phases", desc: `${fmt(STARTING_BALANCE)} → ${fmt(TARGET_BALANCE)} with risk rules`, accent: C.blue },
 ];
 
 export function LoginScreen() {
@@ -29,7 +29,7 @@ export function LoginScreen() {
           </h1>
 
           <p className="login-subtitle">
-            Трейдинг журнал за Binance Futures. Записвай сделки, следи фазите и се състезавай с групата.
+            Trading journal for Binance Futures. Log trades, track phases, and compete with the group.
           </p>
 
           <div className="login-stats">
@@ -60,7 +60,7 @@ export function LoginScreen() {
             <LoginForm />
           </div>
           <p className="login-footer">
-            Стартираш от {fmt(STARTING_BALANCE)} USDT · цел {fmt(TARGET_BALANCE)} USDT
+            Start from {fmt(STARTING_BALANCE)} USDT · target {fmt(TARGET_BALANCE)} USDT
           </p>
         </section>
       </div>

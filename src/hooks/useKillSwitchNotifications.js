@@ -30,7 +30,7 @@ export function useKillSwitchNotifications(trades, balance) {
 
     if (!discipline.canTrade && prevCanTrade.current) {
       const alert = discipline.alerts.find(a => a.level === "danger");
-      const text = alert?.text || "Kill switch активен. Пауза за деня.";
+      const text = alert?.text || "Kill switch active. Pause for the day.";
 
       if (!askedPermission.current && Notification.permission === "default") {
         askedPermission.current = true;

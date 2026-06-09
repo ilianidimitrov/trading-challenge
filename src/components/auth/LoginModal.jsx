@@ -12,8 +12,8 @@ export function LoginModal({ open, onClose }) {
     return (
       <Overlay onClose={onClose}>
         <div style={{ color: C.dim, fontSize: 13, lineHeight: 1.6 }}>
-          Supabase не е конфигуриран. Добави <code>VITE_SUPABASE_URL</code> и{" "}
-          <code>VITE_SUPABASE_ANON_KEY</code> в <code>.env</code> файл.
+          Supabase is not configured. Add <code>VITE_SUPABASE_URL</code> and{" "}
+          <code>VITE_SUPABASE_ANON_KEY</code> to your <code>.env</code> file.
         </div>
         <div style={{ marginTop: 16 }}><Btn onClick={onClose}>Close</Btn></div>
       </Overlay>

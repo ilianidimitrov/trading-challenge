@@ -77,7 +77,7 @@ export function SettingsModal({ open, onClose }) {
           </div>
           <div style={{ color: C.dim, fontSize: 11 }}>Email: {user.email}</div>
           {error && <div style={{ color: C.red, fontSize: 12 }}>{error}</div>}
-          {success && <div style={{ color: C.green, fontSize: 12 }}>Запазено!</div>}
+          {success && <div style={{ color: C.green, fontSize: 12 }}>Saved!</div>}
           <div style={{ display: "flex", gap: 8 }}>
             <Btn type="submit" variant="primary" disabled={saving}>{saving ? "..." : "Save"}</Btn>
             <Btn type="button" onClick={onClose} variant="default">Cancel</Btn>

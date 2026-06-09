@@ -26,12 +26,12 @@ export function LoginForm({ onSuccess }) {
       if (mode === "login") {
         await signIn(email, password);
       } else {
-        if (!username.trim()) throw new Error("Username е задължителен.");
+        if (!username.trim()) throw new Error("Username is required.");
         await signUp(email, password, username.trim(), displayName.trim() || username.trim());
       }
       onSuccess?.();
     } catch (err) {
-      setError(err.message || "Грешка при автентикация.");
+      setError(err.message || "Authentication failed.");
     } finally {
       setLoading(false);
     }
@@ -58,8 +58,8 @@ export function LoginForm({ onSuccess }) {
 
       <p className="login-form-hint">
         {mode === "login"
-          ? "Влез с email и парола."
-          : "Създай акаунт и започни challenge-а."}
+          ? "Sign in with your email and password."
+          : "Create an account and start the challenge."}
       </p>
 
       <form onSubmit={handleSubmit} className="login-fields">
@@ -113,7 +113,7 @@ export function LoginForm({ onSuccess }) {
         )}
 
         <Btn type="submit" variant="primary" disabled={loading} style={{ width: "100%", padding: "12px 16px", marginTop: 4 }}>
-          {loading ? "Моля изчакай..." : mode === "login" ? "Влез" : "Създай акаунт"}
+          {loading ? "Please wait..." : mode === "login" ? "Sign in" : "Create account"}
         </Btn>
       </form>
     </div>

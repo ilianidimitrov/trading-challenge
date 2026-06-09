@@ -1,78 +1,72 @@
-import { STARTING_BALANCE } from "../constants/palette";
-import { getActivePhase } from "./format";
 import { PHASES } from "../constants/phases";
+import { getActivePhase } from "./format";
 
 const DAILY_LOSS_LIMIT = 0.10;
-const CONSECUTIVE_LOSS_LIMIT = 3;
-
-function isToday(ts) {
-  const d = new Date(ts);
-  const now = new Date();
-  return d.toDateString() === now.toDateString();
-}
 
 export function checkDiscipline(trades, balance) {
-  const alerts = [];
-  const phase = getActivePhase(PHASES, balance);
-
-  const todayTrades = trades.filter(t => isToday(t.createdAt || Date.now()));
+  const today = new Date().toISOString().slice(0, 10);
+  const todayTrades = trades.filter(t => t.date?.startsWith(today));
   const todayPnl = todayTrades.reduce((s, t) => s + parseFloat(t.pnl || 0), 0);
-  const dayStartBalance = balance - todayPnl;
+  const dailyLossPct = todayPnl < 0 ? Math.abs(todayPnl) / balance : 0;
 
-  if (dayStartBalance > 0) {
-    const dailyLossPct = todayPnl < 0 ? Math.abs(todayPnl) / dayStartBalance : 0;
-    if (dailyLossPct >= DAILY_LOSS_LIMIT) {
-      alerts.push({
-        level: "danger",
-        title: "Kill Switch — Daily Loss",
-        text: `Дневна загуба ${(dailyLossPct * 100).toFixed(1)}% от Binance futures wallet (лимит ${DAILY_LOSS_LIMIT * 100}%). Край на сесията.`,
-      });
-    } else if (dailyLossPct >= DAILY_LOSS_LIMIT * 0.7) {
-      alerts.push({
-        level: "warning",
-        title: "Daily Loss Warning",
-        text: `Дневна загуба ${(dailyLossPct * 100).toFixed(1)}% — наближаваш лимита от ${DAILY_LOSS_LIMIT * 100}%.`,
-      });
-    }
-  }
-
+  const sorted = [...trades].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   let consecutiveLosses = 0;
-  for (const t of trades) {
+  for (const t of sorted) {
     if (t.result === "LOSS") consecutiveLosses++;
     else break;
   }
-  if (consecutiveLosses >= CONSECUTIVE_LOSS_LIMIT) {
+
+  const phase = getActivePhase(PHASES, balance);
+  const phaseDailyLimit = phase.id >= 2 ? 0.15 : DAILY_LOSS_LIMIT;
+
+  const alerts = [];
+
+  if (dailyLossPct >= DAILY_LOSS_LIMIT) {
     alerts.push({
       level: "danger",
-      title: "Kill Switch — Losing Streak",
-      text: `${consecutiveLosses} поредни загуби. Пауза за деня според правилата.`,
+      title: "Daily Kill Switch",
+      text: `Daily loss ${(dailyLossPct * 100).toFixed(1)}% of Binance futures wallet (limit ${DAILY_LOSS_LIMIT * 100}%). End session.`,
     });
-  } else if (consecutiveLosses === CONSECUTIVE_LOSS_LIMIT - 1) {
+  } else if (dailyLossPct >= DAILY_LOSS_LIMIT * 0.75) {
     alerts.push({
       level: "warning",
-      title: "Losing Streak Warning",
-      text: `${consecutiveLosses} поредни загуби — още 1 и пауза.`,
+      title: "Approaching Daily Limit",
+      text: `Daily loss ${(dailyLossPct * 100).toFixed(1)}% — approaching ${DAILY_LOSS_LIMIT * 100}% limit.`,
     });
   }
 
-  const phaseDailyLimit = phase.id >= 2 ? 0.15 : DAILY_LOSS_LIMIT;
-  if (dayStartBalance > 0 && todayPnl < 0) {
-    const pct = Math.abs(todayPnl) / dayStartBalance;
-    if (pct >= phaseDailyLimit && pct < DAILY_LOSS_LIMIT) {
+  if (consecutiveLosses >= 3) {
+    alerts.push({
+      level: "danger",
+      title: "Loss Streak",
+      text: `${consecutiveLosses} consecutive losses. Pause for the day per rules.`,
+    });
+  } else if (consecutiveLosses === 2) {
+    alerts.push({
+      level: "warning",
+      title: "Loss Streak Warning",
+      text: `${consecutiveLosses} consecutive losses — one more triggers a pause.`,
+    });
+  }
+
+  if (phase.id >= 2 && dailyLossPct >= phaseDailyLimit) {
+    const pct = dailyLossPct;
+    if (!alerts.some(a => a.level === "danger")) {
       alerts.push({
-        level: "warning",
-        title: `${phase.tag} Daily Limit`,
-        text: `Фаза ${phase.tag}: дневен лимит ${phaseDailyLimit * 100}%. Текущо: ${(pct * 100).toFixed(1)}%.`,
+        level: "danger",
+        title: `Phase ${phase.tag} Limit`,
+        text: `Phase ${phase.tag}: daily limit ${phaseDailyLimit * 100}%. Current: ${(pct * 100).toFixed(1)}%.`,
       });
     }
   }
 
+  const canTrade = !alerts.some(a => a.level === "danger");
+
   return {
-    alerts,
     todayTrades: todayTrades.length,
     todayPnl,
     consecutiveLosses,
-    phase,
-    canTrade: !alerts.some(a => a.level === "danger"),
+    canTrade,
+    alerts,
   };
 }

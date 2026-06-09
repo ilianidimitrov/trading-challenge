@@ -20,7 +20,7 @@ export async function importTradesJson(file) {
   const raw = Array.isArray(data) ? data : data.trades;
 
   if (!Array.isArray(raw)) {
-    throw new Error("Невалиден JSON формат.");
+    throw new Error("Invalid JSON format.");
   }
 
   return raw.map((t, i) => ({

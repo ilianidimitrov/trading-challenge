@@ -176,7 +176,7 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
         }}>
           <Label color={C.muted}>No data yet</Label>
           <div style={{ color: C.dim, fontSize: 12, marginTop: 8 }}>
-            Запиши първия си трейд в Journal за да видиш статистики.
+            Log your first trade in Journal to see statistics.
           </div>
         </div>
       )}

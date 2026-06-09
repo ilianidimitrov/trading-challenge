@@ -150,7 +150,7 @@ export function Journal({
     try {
       await onImport(await importTradesJson(file));
     } catch (err) {
-      alert(err.message || "Грешка при import.");
+      alert(err.message || "Import failed.");
     }
     e.target.value = "";
   }
@@ -204,7 +204,7 @@ export function Journal({
           <Label color={C.dim}>{editingId ? "Edit Trade" : "New Binance Trade"}</Label>
           {!discipline.canTrade && !editingId && (
             <div style={{ color: C.red, fontSize: 12, marginTop: 8, padding: 10, background: C.redDim, borderRadius: 6 }}>
-              Kill switch активен — препоръчва се пауза от Binance Futures сесията.
+              Kill switch active — pause recommended for this Binance Futures session.
             </div>
           )}
           <div className="journal-grid" style={{ marginTop: 14, marginBottom: 12 }}>
@@ -267,7 +267,7 @@ export function Journal({
                 <Btn onClick={() => screenshotRef.current?.click()} variant="default" disabled={uploading}>
                   {uploading ? "..." : "Upload"}
                 </Btn>
-                <Inp value={form.screenshotUrl} onChange={e => sf("screenshotUrl", e.target.value)} placeholder="URL или upload" />
+                <Inp value={form.screenshotUrl} onChange={e => sf("screenshotUrl", e.target.value)} placeholder="URL or upload" />
                 <input ref={screenshotRef} type="file" accept="image/*" onChange={handleScreenshot} style={{ display: "none" }} />
               </div>
             </Field>
@@ -283,7 +283,7 @@ export function Journal({
 
           {suggestedNotional && (
             <div style={{ color: C.dim, fontSize: 11, marginBottom: 10 }}>
-              Suggested notional при {form.riskPct || activePhase.risk}% risk + SL: ~{suggestedNotional} USDT
+              Suggested notional at {form.riskPct || activePhase.risk}% risk + SL: ~{suggestedNotional} USDT
               <span style={{ marginLeft: 8 }}>
                 <Btn onClick={() => sf("positionUsdt", String(suggestedNotional))} variant="default">Apply</Btn>
               </span>
@@ -309,7 +309,7 @@ export function Journal({
       <ConfirmModal
         open={deleteId !== null}
         title="Delete Trade"
-        message="Сигурен ли си? USDT балансът ще се преизчисли от историята."
+        message="Are you sure? USDT balance will be recalculated from trade history."
         onConfirm={() => { onDelete(deleteId); setDeleteId(null); }}
         onCancel={() => setDeleteId(null)}
       />
@@ -382,8 +382,8 @@ function EmptyState({ hasEntries }) {
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: 40, textAlign: "center" }}>
       <Label color={C.muted}>{hasEntries ? "No trades match filter" : "No trades recorded"}</Label>
       <div style={{ color: C.dim, fontSize: 12, marginTop: 8, lineHeight: 1.6 }}>
-        {hasEntries ? "Промени филтрите." : (
-          <>Записвай всеки Binance Futures трейд с entry, SL, TP и leverage.<br />PnL се въвежда в USDT.</>
+        {hasEntries ? "Try changing the filters." : (
+          <>Log every Binance Futures trade with entry, SL, TP, and leverage.<br />PnL is entered in USDT.</>
         )}
       </div>
     </div>

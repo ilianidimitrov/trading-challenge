@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
   }, [loadProfile]);
 
   const signUp = async (email, password, username, displayName) => {
-    if (!supabase) throw new Error("Supabase не е конфигуриран.");
+    if (!supabase) throw new Error("Supabase is not configured.");
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -57,7 +57,7 @@ export function AuthProvider({ children }) {
   };
 
   const signIn = async (email, password) => {
-    if (!supabase) throw new Error("Supabase не е конфигуриран.");
+    if (!supabase) throw new Error("Supabase is not configured.");
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;

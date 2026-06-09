@@ -34,11 +34,11 @@ export function Profile({ userId, onBack }) {
   if (!userId) return null;
 
   if (loading) {
-    return <div style={{ color: C.dim, padding: 20 }}>Зареждане...</div>;
+    return <div style={{ color: C.dim, padding: 20 }}>Loading...</div>;
   }
 
   if (!profile) {
-    return <div style={{ color: C.red, padding: 20 }}>Профилът не е намерен.</div>;
+    return <div style={{ color: C.red, padding: 20 }}>Profile not found.</div>;
   }
 
   return (
@@ -75,7 +75,7 @@ export function Profile({ userId, onBack }) {
       }}>
         <Label color={C.dim}>Recent Trades</Label>
         {trades.length === 0 ? (
-          <div style={{ color: C.dim, fontSize: 12, marginTop: 12 }}>Няма публични трейдове.</div>
+          <div style={{ color: C.dim, fontSize: 12, marginTop: 12 }}>No public trades.</div>
         ) : (
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
             {trades.map((t, i) => {

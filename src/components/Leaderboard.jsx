@@ -43,7 +43,7 @@ export function Leaderboard({ onSelectUser }) {
       }}>
         <Label color={C.muted}>Leaderboard</Label>
         <div style={{ color: C.dim, fontSize: 12, marginTop: 8 }}>
-          Конфигурирай Supabase в <code>.env</code> за споделена класация.
+          Configure Supabase in <code>.env</code> for a shared leaderboard.
         </div>
       </div>
     );
@@ -72,7 +72,7 @@ export function Leaderboard({ onSelectUser }) {
           background: C.surface, border: `1px solid ${C.border}`,
           borderRadius: 8, padding: 40, textAlign: "center",
         }}>
-          <Label color={C.muted}>Няма участници още</Label>
+          <Label color={C.muted}>No participants yet</Label>
         </div>
       )}
 

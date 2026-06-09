@@ -6,12 +6,12 @@ export function validateTrade(trade, balanceBeforeTrade) {
   const warnings = [];
 
   if (!trade.pair?.trim()) {
-    errors.push("Pair е задължителен.");
+    errors.push("Pair is required.");
   }
 
   const pnl = parseFloat(trade.pnl);
   if (trade.pnl === "" || trade.pnl === null || trade.pnl === undefined || isNaN(pnl)) {
-    errors.push("PnL е задължителен.");
+    errors.push("PnL is required.");
   }
 
   if (!errors.length && balanceBeforeTrade > 0) {
@@ -21,7 +21,7 @@ export function validateTrade(trade, balanceBeforeTrade) {
 
     if (absPnl > maxRisk * 1.1) {
       warnings.push(
-        `PnL (${absPnl.toFixed(2)}$) надвишава max risk за ${phase.tag} (${maxRisk.toFixed(2)}$ при ${phase.risk}%).`
+        `PnL (${absPnl.toFixed(2)}$) exceeds max risk for ${phase.tag} (${maxRisk.toFixed(2)}$ at ${phase.risk}%).`
       );
     }
   }

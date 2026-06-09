@@ -4,9 +4,9 @@ const BUCKET = "trade-screenshots";
 const MAX_SIZE_MB = 2;
 
 export async function uploadTradeScreenshot(userId, file) {
-  if (!supabase) throw new Error("Supabase не е конфигуриран.");
+  if (!supabase) throw new Error("Supabase is not configured.");
   if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-    throw new Error(`Максимален размер: ${MAX_SIZE_MB}MB`);
+    throw new Error(`Maximum file size: ${MAX_SIZE_MB}MB`);
   }
 
   const ext = file.name.split(".").pop() || "png";
@@ -24,7 +24,7 @@ export async function uploadTradeScreenshot(userId, file) {
 
 export async function fileToDataUrl(file) {
   if (file.size > 500 * 1024) {
-    throw new Error("Локално: макс. 500KB. Качи в cloud акаунт за по-големи файлове.");
+    throw new Error("Local limit: 500KB max. Sign in to upload larger files.");
   }
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
