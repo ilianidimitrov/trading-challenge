@@ -1,11 +1,12 @@
 import { C, STARTING_BALANCE, TARGET_BALANCE } from "../../constants/palette";
 import { EXCHANGE } from "../../constants/binance";
+import { fmt } from "../../utils/format";
 import { LoginForm } from "./LoginForm";
 
 const FEATURES = [
   { tag: "JNL", title: "Journal", desc: "USDT-M трейдове с SL/TP и PnL", accent: C.green },
   { tag: "TOP", title: "Leaderboard", desc: "Класация на общността", accent: C.yellow },
-  { tag: "P10", title: "10 Phases", desc: "$5 → $1M с risk rules", accent: C.blue },
+  { tag: "P10", title: "10 Phases", desc: `${fmt(STARTING_BALANCE)} → ${fmt(TARGET_BALANCE)} с risk rules`, accent: C.blue },
 ];
 
 export function LoginScreen() {
@@ -21,9 +22,9 @@ export function LoginScreen() {
           <h1 className="login-title">
             <span className="login-title-muted">Challenge</span>
             <span className="login-title-main">
-              ${STARTING_BALANCE}
+              {fmt(STARTING_BALANCE)}
               <span className="login-arrow">→</span>
-              $1M
+              {fmt(TARGET_BALANCE)}
             </span>
           </h1>
 
@@ -32,8 +33,8 @@ export function LoginScreen() {
           </p>
 
           <div className="login-stats">
-            <Stat label="Start" value={`$${STARTING_BALANCE}`} accent={C.green} />
-            <Stat label="Target" value="$1M" accent={C.yellow} />
+            <Stat label="Start" value={fmt(STARTING_BALANCE)} accent={C.green} />
+            <Stat label="Target" value={fmt(TARGET_BALANCE)} accent={C.yellow} />
             <Stat label="Phases" value="10" accent={C.blue} />
           </div>
 
@@ -59,7 +60,7 @@ export function LoginScreen() {
             <LoginForm />
           </div>
           <p className="login-footer">
-            Стартираш от ${STARTING_BALANCE} USDT · цел ${(TARGET_BALANCE / 1_000_000).toFixed(0)}M USDT
+            Стартираш от {fmt(STARTING_BALANCE)} USDT · цел {fmt(TARGET_BALANCE)} USDT
           </p>
         </section>
       </div>

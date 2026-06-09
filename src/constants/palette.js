@@ -22,5 +22,5 @@ export const PHASE_COLORS = [
   "#14b8a6", "#3b82f6", "#8b5cf6", "#a855f7", "#f0c040",
 ];
 
-export const STARTING_BALANCE = 5;
-export const TARGET_BALANCE = 1_000_000;
+export const STARTING_BALANCE = 100;
+export const TARGET_BALANCE = 10_000;

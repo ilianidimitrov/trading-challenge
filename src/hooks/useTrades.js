@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import { STARTING_BALANCE } from "../constants/palette";
 import { useLocalStorage } from "./useLocalStorage";
 import { computeBalance } from "../utils/balance";
 import { attachBalances } from "../utils/tradeBalances";
@@ -45,7 +46,7 @@ export function useTrades() {
 
   const getBalanceBeforeTrade = useCallback((tradeId) => {
     const sorted = [...rawTrades].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
-    let bal = 5;
+    let bal = STARTING_BALANCE;
     for (const t of sorted) {
       if (t.id === tradeId) return bal;
       bal = Math.max(0.01, bal + parseFloat(t.pnl || 0));

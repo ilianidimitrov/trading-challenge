@@ -13,6 +13,6 @@ export function getActivePhase(phases, balance) {
   return idx >= 0 ? phases[idx] : phases[phases.length - 1];
 }
 
-export function getOverallProgress(balance, start = 5, target = 1_000_000) {
+export function getOverallProgress(balance, start = 100, target = 10_000) {
   return Math.min(100, ((balance - start) / (target - start)) * 100);
 }

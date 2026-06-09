@@ -1,9 +1,9 @@
 export const PHASES = [
   {
     id: 1, tag: "P01", label: "Capital Preservation",
-    from: 5, to: 25,
+    from: 100, to: 150,
     risk: 5, rr: 2, rrStr: "1:2", wr: 55, lev: "5–10×",
-    note: "Стартираш с $5 USDT в Binance Futures. Грешките струват центове — фокус върху оцеляване.",
+    note: "Стартираш с $100 USDT в Binance Futures. Грешките струват малко — фокус върху оцеляване.",
     rules: [
       "Само USDT-M Perpetual на Binance Futures",
       "Максимум 2 отворени позиции едновременно",
@@ -15,7 +15,7 @@ export const PHASES = [
   },
   {
     id: 2, tag: "P02", label: "Process Discipline",
-    from: 25, to: 100,
+    from: 150, to: 250,
     risk: 4, rr: 2.5, rrStr: "1:2.5", wr: 55, lev: "5–10×",
     note: "Доказваш, че P01 не е случайност. Журналът на всеки crypto трейд е задължителен.",
     rules: [
@@ -28,9 +28,9 @@ export const PHASES = [
   },
   {
     id: 3, tag: "P03", label: "Consistency",
-    from: 100, to: 300,
+    from: 250, to: 400,
     risk: 3.5, rr: 2.5, rrStr: "1:2.5", wr: 52, lev: "5–8×",
-    note: "$100+ USDT в futures wallet е психологически праг. Процесът > adrenaline.",
+    note: "$250+ USDT в futures wallet е психологически праг. Процесът > adrenaline.",
     rules: [
       "Частично затваряне: 50% на TP1, 50% на TP2 в Binance",
       "SL на breakeven след TP1 (Binance trailing или ръчно)",
@@ -41,7 +41,7 @@ export const PHASES = [
   },
   {
     id: 4, tag: "P04", label: "Capital Accumulation",
-    from: 300, to: 1_000,
+    from: 400, to: 650,
     risk: 3, rr: 3, rrStr: "1:3", wr: 50, lev: "3–5×",
     note: "Методичен растеж на USDT баланса. FOMO при altseason унищожава прогреса.",
     rules: [
@@ -54,9 +54,9 @@ export const PHASES = [
   },
   {
     id: 5, tag: "P05", label: "Institutional Mindset",
-    from: 1_000, to: 5_000,
+    from: 650, to: 1_000,
     risk: 2.5, rr: 3, rrStr: "1:3", wr: 50, lev: "3–5×",
-    note: "$1K USDT е праг. Мисли като portfolio manager, не като degen trader.",
+    note: "$650+ USDT е праг. Мисли като portfolio manager, не като degen trader.",
     rules: [
       "Max drawdown 20% от futures wallet",
       "Диверсификация: BTC + ETH + max 1 alt (не корелирани)",
@@ -67,9 +67,9 @@ export const PHASES = [
   },
   {
     id: 6, tag: "P06", label: "Scaling",
-    from: 5_000, to: 15_000,
+    from: 1_000, to: 1_600,
     risk: 2, rr: 3, rrStr: "1:3", wr: 50, lev: "2–3×",
-    note: "Грешка на това ниво = стотици USDT. Размерът на позицията е критичен.",
+    note: "Грешка на това ниво = десетки USDT. Размерът на позицията е критичен.",
     rules: [
       "Trading plan преди всяка сесия (pairs, bias, max loss)",
       "Limit orders за вход — по-малко market chase",
@@ -80,12 +80,12 @@ export const PHASES = [
   },
   {
     id: 7, tag: "P07", label: "Professional",
-    from: 15_000, to: 50_000,
+    from: 1_600, to: 2_500,
     risk: 1.5, rr: 3.5, rrStr: "1:3.5", wr: 48, lev: "2–3×",
     note: "Капиталът е значим. Защита > aggressive leverage.",
     rules: [
       "Хедж с BTC short при alt-heavy portfolio в risk-off",
-      "Split: Futures активен капитал + Spot cold storage",
+      "Split: Futures активен капитал + Spot резерв",
       "Accountability partner в групата",
       "Leverage максимум 3×",
       "Следиш open interest и liquidation clusters",
@@ -93,41 +93,41 @@ export const PHASES = [
   },
   {
     id: 8, tag: "P08", label: "Elite",
-    from: 50_000, to: 150_000,
+    from: 2_500, to: 4_000,
     risk: 1.5, rr: 3.5, rrStr: "1:3.5", wr: 48, lev: "1–2×",
     note: "Мисли в % месечна доходност в USDT, не в '10× moonshots'.",
     rules: [
       "Position sizing по Kelly (консервативна фракция)",
       "Корелационен риск между BTC, ETH, alts",
       "Leverage максимум 2×",
-      "TWAP за позиции над $10K notional",
+      "TWAP за позиции над $500 notional",
       "Backtest setup-ите на исторически crypto данни",
     ],
   },
   {
-    id: 9, tag: "P09", label: "Whale Tier",
-    from: 150_000, to: 500_000,
+    id: 9, tag: "P09", label: "Advanced",
+    from: 4_000, to: 6_500,
     risk: 1, rr: 4, rrStr: "1:4", wr: 45, lev: "1–2×",
-    note: "Големите позиции влияят на order book-а. Slippage и liquidity са риск.",
+    note: "Големите позиции влияят на slippage. Liquidity е риск.",
     rules: [
-      "TWAP/VWAP entries на Binance за големи ордери",
+      "TWAP/VWAP entries на Binance за по-големи ордери",
       "Мониторинг на order book depth и liquidation heatmap",
       "Не търгувай illiquid alts с голям size",
-      "Риск 1% = $1,500+ на трейд — triple-check",
+      "Риск 1% = $40+ на трейд — triple-check",
       "Част от капитала извън exchange (cold storage)",
     ],
   },
   {
-    id: 10, tag: "P10", label: "Seven Figures",
-    from: 500_000, to: 1_000_000,
+    id: 10, tag: "P10", label: "Target",
+    from: 6_500, to: 10_000,
     risk: 0.75, rr: 4, rrStr: "1:4", wr: 45, lev: "1×",
-    note: "$500K+ USDT. Без degen leverage. Само spot + low-lev futures hedging.",
+    note: "$6.5K+ USDT. Без degen leverage. Финален sprint към $10K.",
     rules: [
       "Максимум 1–2× leverage или чист Spot",
-      "Риск 0.75% = $3,750 на трейд",
+      "Риск 0.75% = $50+ на трейд",
       "Само highest-conviction BTC/ETH setups",
       "Значителна част в cold wallet (не на exchange)",
-      "План за алокация след $1M USDT",
+      "План за алокация след $10K USDT",
     ],
   },
 ];

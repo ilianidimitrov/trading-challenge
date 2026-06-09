@@ -5,7 +5,7 @@ declare
   user_balance numeric;
   max_allowed numeric;
 begin
-  select coalesce(sum(pnl), 0) + 5 into user_balance
+  select coalesce(sum(pnl), 0) + 100 into user_balance
   from public.trades
   where user_id = new.user_id
     and id is distinct from new.id;

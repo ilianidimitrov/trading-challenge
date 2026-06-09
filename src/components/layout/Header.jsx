@@ -19,7 +19,7 @@ export function Header({ bal, active }) {
               color: C.bright, fontSize: 28, fontWeight: 900, letterSpacing: -1,
               marginTop: 4, fontVariantNumeric: "tabular-nums",
             }}>
-              $5 <span style={{ color: C.muted, fontWeight: 300 }}>→</span> $1M USDT
+              {fmt(STARTING_BALANCE)} <span style={{ color: C.muted, fontWeight: 300 }}>→</span> {fmt(TARGET_BALANCE)} USDT
             </div>
             <div style={{ color: C.dim, fontSize: 12, marginTop: 4 }}>
               Binance USDT-M · 10 phases · {PHASES.length} risk tiers
@@ -63,14 +63,14 @@ export function Header({ bal, active }) {
             display: "flex", justifyContent: "space-between", marginTop: 4,
             flexWrap: "wrap", gap: 4,
           }}>
-            <Label color={C.muted}>$5</Label>
+            <Label color={C.muted}>{fmt(STARTING_BALANCE)}</Label>
             {bal < TARGET_BALANCE && (
               <Label color={C.yellow}>
                 {active.tag} — {active.label} · {fmt(active.to - bal)} to next milestone
               </Label>
             )}
             {bal >= TARGET_BALANCE && <Label color={C.green}>COMPLETED</Label>}
-            <Label color={C.muted}>$1M</Label>
+            <Label color={C.muted}>{fmt(TARGET_BALANCE)}</Label>
           </div>
         </div>
       </div>
