@@ -1,5 +1,3 @@
-// Supabase Edge Function — Binance trade notifications to Telegram
-// Secrets: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 

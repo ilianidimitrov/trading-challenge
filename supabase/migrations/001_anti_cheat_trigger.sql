@@ -1,5 +1,3 @@
--- Anti-cheat: reject trades where |pnl| exceeds 50% of balance at time of trade
--- Run after schema.sql if you want server-side validation
 
 create or replace function public.validate_trade_pnl()
 returns trigger as $$
@@ -12,7 +10,6 @@ begin
   where user_id = new.user_id
     and id is distinct from new.id;
 
-  -- Max single trade loss/gain: 50% of current balance (generous for all phases)
   max_allowed := greatest(user_balance * 0.5, 1);
 
   if abs(new.pnl) > max_allowed then

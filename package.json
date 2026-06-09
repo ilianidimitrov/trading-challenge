@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "seed:generate": "node scripts/generate-seed.mjs",
     "db:setup": "node scripts/apply-supabase-sql.mjs"
   },
   "dependencies": {

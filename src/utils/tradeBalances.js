@@ -1,10 +1,5 @@
 import { STARTING_BALANCE } from "../constants/palette";
 
-/**
- * Attach running balances to trades (newest first for display).
- * @param {import("../types/trade").Trade[]} trades
- * @param {number} [start]
- */
 export function attachBalances(trades, start = STARTING_BALANCE) {
   const sorted = [...trades].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
   let bal = start;

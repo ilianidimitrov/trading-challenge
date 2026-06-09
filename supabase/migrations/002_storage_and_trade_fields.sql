@@ -1,5 +1,3 @@
--- Binance trade fields + screenshot storage
--- Run after schema.sql
 
 alter table public.trades
   add column if not exists market_type text default 'USDT-M',
@@ -7,7 +5,6 @@ alter table public.trades
   add column if not exists quantity numeric,
   add column if not exists position_usdt numeric;
 
--- Storage bucket for trade screenshots
 insert into storage.buckets (id, name, public)
 values ('trade-screenshots', 'trade-screenshots', true)
 on conflict (id) do nothing;

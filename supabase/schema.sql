@@ -1,7 +1,4 @@
--- Trading Challenge — Supabase schema
--- Run in Supabase SQL Editor
 
--- Profiles (extends auth.users)
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text unique not null,
@@ -21,7 +18,6 @@ create policy "Users can update own profile"
 create policy "Users can insert own profile"
   on public.profiles for insert with check (auth.uid() = id);
 
--- Trades
 create table if not exists public.trades (
   id bigserial primary key,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -62,7 +58,6 @@ create policy "Users can update own trades"
 create policy "Users can delete own trades"
   on public.trades for delete using (auth.uid() = user_id);
 
--- Leaderboard view (balance computed from trades — no balance column)
 create or replace view public.leaderboard as
 select
   p.id as user_id,
@@ -100,7 +95,6 @@ left join public.trades t on t.user_id = p.id
 group by p.id, p.username, p.display_name
 order by balance desc;
 
--- Auto-create profile on signup
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
@@ -119,5 +113,3 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- Telegram notification trigger (calls Edge Function via pg_net or webhook)
--- Configure in Supabase Dashboard → Database → Webhooks on trades INSERT

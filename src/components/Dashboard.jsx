@@ -21,7 +21,6 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
         <Label color={C.muted}>{EXCHANGE} · USDT PnL</Label>
       </div>
 
-      {/* Discipline alerts */}
       {discipline.alerts.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {discipline.alerts.map((a, i) => (
@@ -39,7 +38,6 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
         </div>
       )}
 
-      {/* Today summary */}
       <div style={{
         background: C.surface, border: `1px solid ${C.border}`,
         borderRadius: 8, padding: 16,
@@ -64,7 +62,6 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
         </div>
       </div>
 
-      {/* Core stats */}
       {stats.total > 0 && (
         <>
           <div className="stats-grid" style={{
@@ -85,7 +82,6 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
             />
           </div>
 
-          {/* Weekly PnL chart */}
           {stats.weeklyPnl.length > 0 && (
             <div style={{
               background: C.surface, border: `1px solid ${C.border}`,
@@ -111,7 +107,6 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
             </div>
           )}
 
-          {/* By setup */}
           {stats.bySetup.length > 0 && (
             <div style={{
               background: C.surface, border: `1px solid ${C.border}`,
@@ -137,7 +132,6 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
             </div>
           )}
 
-          {/* By pair */}
           {stats.byPair.length > 1 && (
             <div style={{
               background: C.surface, border: `1px solid ${C.border}`,

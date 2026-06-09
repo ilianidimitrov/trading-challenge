@@ -5,7 +5,6 @@ export const supabase = isSupabaseConfigured()
   ? createClient(config.supabaseUrl, config.supabaseAnonKey)
   : null;
 
-/** @param {string} userId */
 export async function fetchUserTrades(userId) {
   if (!supabase) return [];
   const { data, error } = await supabase
@@ -17,7 +16,6 @@ export async function fetchUserTrades(userId) {
   return (data || []).map(dbToTrade);
 }
 
-/** @param {string} userId @param {object} trade */
 export async function insertTrade(userId, trade) {
   if (!supabase) return trade;
   const row = tradeToDb(trade, userId);
@@ -26,7 +24,6 @@ export async function insertTrade(userId, trade) {
   return dbToTrade(data);
 }
 
-/** @param {string} userId @param {number} id @param {object} trade */
 export async function updateTradeDb(userId, id, trade) {
   if (!supabase) return trade;
   const row = tradeToDb(trade, userId);
@@ -43,7 +40,6 @@ export async function updateTradeDb(userId, id, trade) {
   return dbToTrade(data);
 }
 
-/** @param {string} userId @param {number} id */
 export async function deleteTradeDb(userId, id) {
   if (!supabase) return;
   const { error } = await supabase.from("trades").delete().eq("id", id).eq("user_id", userId);
@@ -61,7 +57,6 @@ export async function fetchLeaderboard() {
   return data || [];
 }
 
-/** @param {string} userId */
 export async function fetchProfile(userId) {
   if (!supabase) return null;
   const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
@@ -69,7 +64,6 @@ export async function fetchProfile(userId) {
   return data;
 }
 
-/** @param {string} userId */
 export async function fetchUserPublicTrades(userId, limit = 10) {
   if (!supabase) return [];
   const { data, error } = await supabase

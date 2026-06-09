@@ -2,7 +2,7 @@ import { STARTING_BALANCE } from "../constants/palette";
 import { getActivePhase } from "./format";
 import { PHASES } from "../constants/phases";
 
-const DAILY_LOSS_LIMIT = 0.10; // 10% global kill switch
+const DAILY_LOSS_LIMIT = 0.10;
 const CONSECUTIVE_LOSS_LIMIT = 3;
 
 function isToday(ts) {
@@ -11,10 +11,6 @@ function isToday(ts) {
   return d.toDateString() === now.toDateString();
 }
 
-/**
- * @param {import("../types/trade").Trade[]} trades - newest first
- * @param {number} balance
- */
 export function checkDiscipline(trades, balance) {
   const alerts = [];
   const phase = getActivePhase(PHASES, balance);
@@ -40,7 +36,6 @@ export function checkDiscipline(trades, balance) {
     }
   }
 
-  // Consecutive losses (newest first)
   let consecutiveLosses = 0;
   for (const t of trades) {
     if (t.result === "LOSS") consecutiveLosses++;
@@ -60,7 +55,6 @@ export function checkDiscipline(trades, balance) {
     });
   }
 
-  // Phase-specific daily limit (P02+ uses 15%)
   const phaseDailyLimit = phase.id >= 2 ? 0.15 : DAILY_LOSS_LIMIT;
   if (dayStartBalance > 0 && todayPnl < 0) {
     const pct = Math.abs(todayPnl) / dayStartBalance;

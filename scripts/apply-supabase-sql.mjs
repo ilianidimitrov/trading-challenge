@@ -1,8 +1,4 @@
-/**
- * Applies schema + migrations + seed to Supabase Postgres.
- * Run: node scripts/apply-supabase-sql.mjs
- * Requires SUPABASE_DB_PASSWORD in .env (not VITE_ — stays server-side only)
- */
+
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -11,7 +7,6 @@ import pg from "pg";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 
-// Load .env manually (no dotenv dep)
 try {
   const envText = readFileSync(join(root, ".env"), "utf8");
   for (const line of envText.split("\n")) {
@@ -30,7 +25,6 @@ if (!password) {
   process.exit(1);
 }
 
-// Direct host is IPv6-only on some networks — resolve or use pooler fallback
 const directHost = `db.${projectRef}.supabase.co`;
 const poolerHost = `aws-0-eu-west-1.pooler.supabase.com`;
 
@@ -84,7 +78,7 @@ async function connect() {
       try {
         await client.end();
       } catch {
-        /* ignore */
+
       }
     }
   }
@@ -94,7 +88,6 @@ async function connect() {
 const files = [
   "supabase/schema.sql",
   "supabase/migrations/002_storage_and_trade_fields.sql",
-  "supabase/seed.sql",
 ];
 
 async function main() {

@@ -2,9 +2,6 @@ import { config } from "./config";
 import { getActivePhase } from "../utils/format";
 import { PHASES } from "../constants/phases";
 
-/**
- * Fire-and-forget Telegram notification via Supabase Edge Function.
- */
 export async function notifyTelegram(trade, balBefore, balAfter, traderName = "") {
   if (!config.telegramNotifyEnabled || !config.telegramWebhookUrl) return;
 
@@ -36,6 +33,5 @@ export async function notifyTelegram(trade, balBefore, balAfter, traderName = ""
       }),
     });
   } catch {
-    // Non-blocking
   }
 }

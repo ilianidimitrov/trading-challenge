@@ -1,6 +1,4 @@
-/**
- * @param {import("../types/trade").Trade[]} trades
- */
+
 export function exportTradesJson(trades) {
   const payload = {
     version: 1,
@@ -16,10 +14,6 @@ export function exportTradesJson(trades) {
   URL.revokeObjectURL(url);
 }
 
-/**
- * @param {File} file
- * @returns {Promise<import("../types/trade").Trade[]>}
- */
 export async function importTradesJson(file) {
   const text = await file.text();
   const data = JSON.parse(text);

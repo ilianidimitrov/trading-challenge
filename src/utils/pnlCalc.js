@@ -1,10 +1,4 @@
-/**
- * Binance USDT-M Perpetual PnL (without fees/funding):
- * LONG:  (exit - entry) × quantity
- * SHORT: (entry - exit) × quantity
- *
- * quantity can be derived from position USDT notional: positionUsdt / entry
- */
+
 
 export function calcQuantity({ entry, positionUsdt, quantity }) {
   const e = parseFloat(entry);
@@ -27,9 +21,6 @@ export function calcPnlFromPrices({ dir, entry, exit, quantity, positionUsdt }) 
   return Math.round(raw * 100) / 100;
 }
 
-/**
- * Suggested position USDT from balance, risk %, leverage, and stop distance.
- */
 export function calcSuggestedPositionUsdt({ balance, riskPct, entry, sl, leverage }) {
   const e = parseFloat(entry);
   const s = parseFloat(sl);
@@ -41,7 +32,6 @@ export function calcSuggestedPositionUsdt({ balance, riskPct, entry, sl, leverag
   if (stopDistPct <= 0) return null;
 
   const riskAmount = balance * (risk / 100);
-  // notional such that loss at SL ≈ riskAmount (approx, ignores fees)
   const notional = riskAmount / stopDistPct;
   return Math.round(notional * 100) / 100;
 }

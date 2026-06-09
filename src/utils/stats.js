@@ -1,8 +1,5 @@
 import { STARTING_BALANCE } from "../constants/palette";
 
-/**
- * @param {import("../types/trade").Trade[]} trades - newest first
- */
 export function computeStats(trades) {
   if (!trades.length) {
     return {
@@ -26,7 +23,6 @@ export function computeStats(trades) {
   const avgWin = wins.length ? grossWin / wins.length : 0;
   const avgLoss = losses.length ? grossLoss / losses.length : 0;
 
-  // Streak (trades sorted newest first)
   let streak = 0;
   let streakType = trades[0]?.result;
   for (const t of trades) {
@@ -34,7 +30,6 @@ export function computeStats(trades) {
     else break;
   }
 
-  // By setup
   const setupMap = {};
   for (const t of trades) {
     const key = t.setup || "Unlabeled";
@@ -47,7 +42,6 @@ export function computeStats(trades) {
     .map(s => ({ ...s, winRate: Math.round(s.wins / s.count * 100) }))
     .sort((a, b) => b.count - a.count);
 
-  // By pair
   const pairMap = {};
   for (const t of trades) {
     const key = t.pair;
@@ -60,7 +54,6 @@ export function computeStats(trades) {
     .map(p => ({ ...p, winRate: Math.round(p.wins / p.count * 100) }))
     .sort((a, b) => b.count - a.count);
 
-  // Weekly PnL (last 8 weeks)
   const weekMap = {};
   const now = Date.now();
   for (const t of trades) {

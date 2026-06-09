@@ -1,10 +1,6 @@
 import { PHASES } from "../constants/phases";
 import { getActivePhase } from "./format";
 
-/**
- * @param {import("../types/trade").Trade|object} trade
- * @param {number} balanceBeforeTrade
- */
 export function validateTrade(trade, balanceBeforeTrade) {
   const errors = [];
   const warnings = [];

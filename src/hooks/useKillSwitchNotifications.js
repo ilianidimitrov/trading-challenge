@@ -18,15 +18,9 @@ function sendNotification(title, body) {
       requireInteraction: true,
     });
   } catch {
-    // Safari / restricted contexts
   }
 }
 
-/**
- * Browser notifications when kill switch activates.
- * @param {import("../types/trade").Trade[]} trades
- * @param {number} balance
- */
 export function useKillSwitchNotifications(trades, balance) {
   const prevCanTrade = useRef(true);
   const askedPermission = useRef(false);

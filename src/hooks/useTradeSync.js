@@ -13,9 +13,6 @@ import { validateTrade } from "../utils/tradeValidation";
 import { notifyTelegram } from "../lib/telegram";
 import { formatPairDisplay } from "../utils/pnlCalc";
 
-/**
- * Unified trades hook: localStorage when offline, Supabase when logged in.
- */
 export function useTradeSync() {
   const { user, profile, isConfigured } = useAuth();
   const local = useTrades();

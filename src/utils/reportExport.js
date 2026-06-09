@@ -2,9 +2,6 @@ import { computeStats } from "./stats";
 import { fmt } from "./format";
 import { EXCHANGE } from "../constants/binance";
 
-/**
- * @param {import("../types/trade").Trade[]} trades
- */
 export function exportCsvReport(trades, balance) {
   const stats = computeStats(trades);
   const headers = [
@@ -55,9 +52,6 @@ export function exportCsvReport(trades, balance) {
   downloadBlob(blob, `binance-challenge-${monthLabel()}.csv`);
 }
 
-/**
- * @param {import("../types/trade").Trade[]} trades
- */
 export function exportPdfReport(trades, balance, profileName = "Trader") {
   const stats = computeStats(trades);
   const month = monthLabel();
