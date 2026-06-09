@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { C } from "../../constants/palette";
 import { useAuth } from "../../contexts/AuthContext";
-import { Btn, Inp, Label } from "../ui";
+import { Btn } from "../ui";
 
 export function LoginForm({ onSuccess }) {
   const { signIn, signUp } = useAuth();
@@ -12,6 +12,11 @@ export function LoginForm({ onSuccess }) {
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function switchMode(next) {
+    setMode(next);
+    setError("");
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -33,31 +38,96 @@ export function LoginForm({ onSuccess }) {
   }
 
   return (
-    <div>
-      <Label color={C.muted}>{mode === "login" ? "Login" : "Register"}</Label>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
+    <div className="login-form">
+      <div className="login-tabs">
+        <button
+          type="button"
+          className={`login-tab${mode === "login" ? " login-tab-active" : ""}`}
+          onClick={() => switchMode("login")}
+        >
+          Login
+        </button>
+        <button
+          type="button"
+          className={`login-tab${mode === "register" ? " login-tab-active" : ""}`}
+          onClick={() => switchMode("register")}
+        >
+          Register
+        </button>
+      </div>
+
+      <p className="login-form-hint">
+        {mode === "login"
+          ? "Влез с email и парола."
+          : "Създай акаунт и започни challenge-а."}
+      </p>
+
+      <form onSubmit={handleSubmit} className="login-fields">
         {mode === "register" && (
           <>
-            <Inp value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" />
-            <Inp value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Display name (optional)" />
+            <Field label="Username" required>
+              <input
+                className="login-input"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="trader_ivan"
+                autoComplete="username"
+              />
+            </Field>
+            <Field label="Display name">
+              <input
+                className="login-input"
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+                placeholder="Ivan"
+                autoComplete="name"
+              />
+            </Field>
           </>
         )}
-        <Inp value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" type="email" />
-        <Inp value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" type="password" />
-        {error && <div style={{ color: C.red, fontSize: 12 }}>{error}</div>}
-        <Btn type="submit" variant="primary" disabled={loading}>
-          {loading ? "..." : mode === "login" ? "Login" : "Create account"}
+
+        <Field label="Email" required>
+          <input
+            className="login-input"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="you@email.com"
+            type="email"
+            autoComplete="email"
+          />
+        </Field>
+
+        <Field label="Password" required>
+          <input
+            className="login-input"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="••••••••"
+            type="password"
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
+          />
+        </Field>
+
+        {error && (
+          <div className="login-error">{error}</div>
+        )}
+
+        <Btn type="submit" variant="primary" disabled={loading} style={{ width: "100%", padding: "12px 16px", marginTop: 4 }}>
+          {loading ? "Моля изчакай..." : mode === "login" ? "Влез" : "Създай акаунт"}
         </Btn>
       </form>
-      <button
-        onClick={() => { setMode(m => m === "login" ? "register" : "login"); setError(""); }}
-        style={{
-          marginTop: 12, background: "none", border: "none", color: C.dim,
-          cursor: "pointer", fontSize: 12, fontFamily: "inherit",
-        }}
-      >
-        {mode === "login" ? "Нямаш акаунт? Register" : "Имаш акаунт? Login"}
-      </button>
     </div>
+  );
+}
+
+function Field({ label, required, children }) {
+  return (
+    <label className="login-field">
+      <span className="login-field-label">
+        {label}
+        {required && <span className="login-required">*</span>}
+      </span>
+      {children}
+    </label>
   );
 }

@@ -1,36 +1,73 @@
-import { C } from "../../constants/palette";
+import { C, STARTING_BALANCE, TARGET_BALANCE } from "../../constants/palette";
 import { EXCHANGE } from "../../constants/binance";
 import { LoginForm } from "./LoginForm";
 
+const FEATURES = [
+  { icon: "📊", title: "Journal", desc: "USDT-M трейдове с SL/TP и PnL" },
+  { icon: "🏆", title: "Leaderboard", desc: "Класация на общността" },
+  { icon: "🎯", title: "10 Phases", desc: "$5 → $1M с risk rules" },
+];
+
 export function LoginScreen() {
   return (
-    <div style={{
-      background: C.bg, minHeight: "100vh",
-      fontFamily: "'Inter', system-ui, sans-serif",
-      color: C.text,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "32px 20px",
-    }}>
-      <div style={{ width: "100%", maxWidth: 420 }}>
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ color: C.muted, fontSize: 11, letterSpacing: 2, fontWeight: 700 }}>
-            {EXCHANGE} FUTURES CHALLENGE
-          </div>
-          <div style={{ color: C.bright, fontSize: 28, fontWeight: 800, marginTop: 8 }}>
-            $5 → $1M USDT
-          </div>
-          <div style={{ color: C.dim, fontSize: 13, marginTop: 12, lineHeight: 1.6 }}>
-            Влез или създай акаунт, за да започнеш challenge-а.
-          </div>
-        </div>
+    <div className="login-page">
+      <div className="login-glow login-glow-a" />
+      <div className="login-glow login-glow-b" />
 
-        <div style={{
-          background: C.surface, border: `1px solid ${C.border}`,
-          borderRadius: 12, padding: 24,
-        }}>
-          <LoginForm />
-        </div>
+      <div className="login-shell">
+        <section className="login-hero">
+          <div className="login-badge">{EXCHANGE} · USDT-M Futures</div>
+
+          <h1 className="login-title">
+            <span className="login-title-muted">Challenge</span>
+            <span className="login-title-main">
+              ${STARTING_BALANCE}
+              <span className="login-arrow">→</span>
+              $1M
+            </span>
+          </h1>
+
+          <p className="login-subtitle">
+            Трейдинг журнал за Binance Futures. Записвай сделки, следи фазите и се състезавай с групата.
+          </p>
+
+          <div className="login-stats">
+            <Stat label="Start" value={`$${STARTING_BALANCE}`} accent={C.green} />
+            <Stat label="Target" value="$1M" accent={C.yellow} />
+            <Stat label="Phases" value="10" accent={C.blue} />
+          </div>
+
+          <ul className="login-features">
+            {FEATURES.map(f => (
+              <li key={f.title} className="login-feature">
+                <span className="login-feature-icon">{f.icon}</span>
+                <div>
+                  <div className="login-feature-title">{f.title}</div>
+                  <div className="login-feature-desc">{f.desc}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="login-panel">
+          <div className="login-card">
+            <LoginForm />
+          </div>
+          <p className="login-footer">
+            Стартираш от ${STARTING_BALANCE} USDT · цел ${(TARGET_BALANCE / 1_000_000).toFixed(0)}M USDT
+          </p>
+        </section>
       </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, accent }) {
+  return (
+    <div className="login-stat">
+      <div className="login-stat-label">{label}</div>
+      <div className="login-stat-value" style={{ color: accent }}>{value}</div>
     </div>
   );
 }
