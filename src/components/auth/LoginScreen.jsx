@@ -3,9 +3,9 @@ import { EXCHANGE } from "../../constants/binance";
 import { LoginForm } from "./LoginForm";
 
 const FEATURES = [
-  { icon: "📊", title: "Journal", desc: "USDT-M трейдове с SL/TP и PnL" },
-  { icon: "🏆", title: "Leaderboard", desc: "Класация на общността" },
-  { icon: "🎯", title: "10 Phases", desc: "$5 → $1M с risk rules" },
+  { tag: "JNL", title: "Journal", desc: "USDT-M трейдове с SL/TP и PnL", accent: C.green },
+  { tag: "TOP", title: "Leaderboard", desc: "Класация на общността", accent: C.yellow },
+  { tag: "P10", title: "10 Phases", desc: "$5 → $1M с risk rules", accent: C.blue },
 ];
 
 export function LoginScreen() {
@@ -39,8 +39,12 @@ export function LoginScreen() {
 
           <ul className="login-features">
             {FEATURES.map(f => (
-              <li key={f.title} className="login-feature">
-                <span className="login-feature-icon">{f.icon}</span>
+              <li
+                key={f.title}
+                className="login-feature"
+                style={{ borderLeftColor: f.accent }}
+              >
+                <span className="login-feature-tag" style={{ color: f.accent }}>{f.tag}</span>
                 <div>
                   <div className="login-feature-title">{f.title}</div>
                   <div className="login-feature-desc">{f.desc}</div>
