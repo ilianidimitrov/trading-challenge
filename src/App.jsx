@@ -16,6 +16,7 @@ import { Dashboard } from "./components/Dashboard";
 import { Leaderboard } from "./components/Leaderboard";
 import { Profile } from "./components/Profile";
 import { LoginModal } from "./components/auth/LoginModal";
+import { LoginScreen } from "./components/auth/LoginScreen";
 import { SettingsModal } from "./components/auth/SettingsModal";
 
 const TABS = [
@@ -34,7 +35,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [profileUserId, setProfileUserId] = useState(null);
 
-  const { profile } = useAuth();
+  const { user, profile, loading: authLoading, isConfigured } = useAuth();
   const {
     trades, balance, addTrade, updateTrade, deleteTrade,
     replaceAllTrades, getBalanceBeforeTrade,
@@ -53,6 +54,22 @@ export default function App() {
 
   async function handleUpdate(id, form, balanceBeforeEdit) {
     return updateTrade(id, form, balanceBeforeEdit);
+  }
+
+  if (isConfigured && authLoading) {
+    return (
+      <div style={{
+        background: C.bg, minHeight: "100vh", display: "flex",
+        alignItems: "center", justifyContent: "center", color: C.dim,
+        fontFamily: "'Inter', system-ui, sans-serif",
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
+  if (isConfigured && !user) {
+    return <LoginScreen />;
   }
 
   return (

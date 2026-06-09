@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "db:setup": "node scripts/apply-supabase-sql.mjs"
+    "db:setup": "node scripts/apply-supabase-sql.mjs",
+    "db:cleanup-demo": "node scripts/cleanup-demo-data.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.8",
