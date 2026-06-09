@@ -8,6 +8,12 @@ body {
   background: #080810;
 }
 
+.app-shell {
+  width: min(1600px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 72px;
+}
+
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -30,6 +36,18 @@ input::placeholder {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+@media (min-width: 1100px) {
+  .journal-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .journal-full {
@@ -89,9 +107,10 @@ input::placeholder {
   position: relative;
   z-index: 1;
   min-height: 100vh;
-  max-width: 1080px;
+  width: 100%;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 40px clamp(20px, 4vw, 48px);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 48px;

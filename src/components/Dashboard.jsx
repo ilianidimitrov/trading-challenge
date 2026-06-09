@@ -64,9 +64,7 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
 
       {stats.total > 0 && (
         <>
-          <div className="stats-grid" style={{
-            display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8,
-          }}>
+          <div className="stats-grid">
             <Cell label="Win Rate" value={`${stats.winRate}%`} color={stats.winRate >= 50 ? C.green : C.red} />
             <Cell label="Profit Factor" value={stats.profitFactor ?? "—"} color={stats.profitFactor >= 1 ? C.green : C.red} />
             <Cell label="Avg Win" value={`+${stats.avgWin.toFixed(2)}$`} color={C.green} />

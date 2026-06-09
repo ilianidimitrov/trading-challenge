@@ -75,9 +75,7 @@ export function Header({ bal, active }) {
         </div>
       </div>
 
-      <div className="stats-grid" style={{
-        display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 24,
-      }}>
+      <div className="stats-grid" style={{ marginBottom: 24 }}>
         <Cell label="Balance" value={fmt(bal)} color={C.bright} />
         <Cell label="Remaining" value={fmt(Math.max(0, TARGET_BALANCE - bal))} color={C.dim} />
         <Cell label="Growth" value={`${((bal / STARTING_BALANCE - 1) * 100).toFixed(0)}%`} color={C.green} />

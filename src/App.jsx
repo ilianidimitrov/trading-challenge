@@ -73,10 +73,10 @@ export default function App() {
   }
 
   return (
-    <div style={{
+    <div className="app-shell" style={{
       background: C.bg, minHeight: "100vh",
       fontFamily: "'Inter', system-ui, sans-serif",
-      color: C.text, maxWidth: 960, margin: "0 auto", padding: "32px 20px 80px",
+      color: C.text,
     }}>
       <AuthBar
         onLoginClick={() => setLoginOpen(true)}
