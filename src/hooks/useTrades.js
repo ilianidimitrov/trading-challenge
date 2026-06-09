@@ -5,7 +5,7 @@ import { computeBalance } from "../utils/balance";
 import { attachBalances } from "../utils/tradeBalances";
 import { validateTrade } from "../utils/tradeValidation";
 import { notifyTelegram } from "../lib/telegram";
-import { formatPairDisplay } from "../utils/pnlCalc";
+import { normalizeTrade } from "../utils/tradeNormalize";
 
 const STORAGE_KEY = "tc_trades";
 
@@ -66,22 +66,3 @@ export function useTrades() {
   };
 }
 
-function normalizeTrade(form, id = Date.now(), createdAt = Date.now()) {
-  return {
-    ...form,
-    id,
-    pair: formatPairDisplay(form.pair),
-    marketType: form.marketType || "USDT-M",
-    pnl: parseFloat(form.pnl),
-    entry: form.entry || "",
-    exit: form.exit || "",
-    sl: form.sl || "",
-    tp: form.tp || "",
-    quantity: form.quantity || "",
-    positionUsdt: form.positionUsdt || "",
-    leverage: form.leverage || "",
-    riskPct: form.riskPct ? parseFloat(form.riskPct) : null,
-    date: new Date(createdAt).toLocaleDateString("bg-BG"),
-    createdAt,
-  };
-}

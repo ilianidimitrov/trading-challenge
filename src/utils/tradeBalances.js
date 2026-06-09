@@ -1,7 +1,11 @@
 import { STARTING_BALANCE } from "../constants/palette";
 
+function tradeTimestamp(t) {
+  return t.tradeAtMs || t.createdAt || 0;
+}
+
 export function attachBalances(trades, start = STARTING_BALANCE) {
-  const sorted = [...trades].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  const sorted = [...trades].sort((a, b) => tradeTimestamp(a) - tradeTimestamp(b));
   let bal = start;
 
   const withBal = sorted.map(t => {

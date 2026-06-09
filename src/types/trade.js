@@ -12,7 +12,17 @@ export const SETUP_TYPES = [
   "Other",
 ];
 
+export function mergeSetupTypes(customSetups = []) {
+  const custom = Array.isArray(customSetups) ? customSetups.filter(Boolean) : [];
+  const base = SETUP_TYPES.filter(s => !custom.includes(s));
+  return [...base, ...custom];
+}
+
 export function createEmptyTradeForm(riskPct = "", leverage = DEFAULT_LEVERAGE) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  const tradeAtLocal = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
   return {
     pair: "BTCUSDT",
     marketType: DEFAULT_MARKET,
@@ -31,5 +41,13 @@ export function createEmptyTradeForm(riskPct = "", leverage = DEFAULT_LEVERAGE) 
     setup: "",
     notes: "",
     screenshotUrl: "",
+    tradeAt: tradeAtLocal,
+    fees: "",
+    funding: "",
+    tp1: "",
+    tp2: "",
+    qtyTp1: "",
+    qtyTp2: "",
+    plannedRiskUsdt: "",
   };
 }

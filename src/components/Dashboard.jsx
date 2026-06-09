@@ -1,22 +1,74 @@
-import { C } from "../constants/palette";
+import { useMemo, useState } from "react";
+import { C, TARGET_BALANCE } from "../constants/palette";
 import { EXCHANGE } from "../constants/binance";
 import { fmt } from "../utils/format";
 import { computeStats, formatWeekLabel } from "../utils/stats";
 import { checkDiscipline } from "../utils/discipline";
+import { computeDrawdown } from "../utils/drawdown";
+import { computeRiskAnalysis } from "../utils/riskAnalysis";
 import { exportCsvReport, exportPdfReport } from "../utils/reportExport";
 import { enableNotifications } from "../hooks/useKillSwitchNotifications";
-import { Bar, Btn, Cell, Label } from "./ui";
+import { EquityCurve } from "./charts/EquityCurve";
+import { CalendarHeatmap } from "./charts/CalendarHeatmap";
+import { ChallengeComplete, shouldShowChallengeComplete, markChallengeCompleteShown } from "./ChallengeComplete";
+import { Bar, Btn, Cell, Inp, Label } from "./ui";
+import { EmptyState } from "./ui/EmptyState";
+
+function tradeTimestamp(t) {
+  return t.tradeAtMs || t.createdAt || 0;
+}
+
+function filterByDateRange(trades, from, to) {
+  if (!from && !to) return trades;
+  const fromMs = from ? new Date(from).getTime() : 0;
+  const toMs = to ? new Date(to + "T23:59:59").getTime() : Infinity;
+  return trades.filter(t => {
+    const ts = tradeTimestamp(t);
+    return ts >= fromMs && ts <= toMs;
+  });
+}
+
+function monthlyRecap(trades) {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const monthTrades = trades.filter(t => tradeTimestamp(t) >= monthStart);
+  const wins = monthTrades.filter(t => t.result === "WIN").length;
+  const pnl = monthTrades.reduce((s, t) => s + parseFloat(t.pnl || 0), 0);
+  const wr = monthTrades.length ? Math.round(wins / monthTrades.length * 100) : null;
+  return { count: monthTrades.length, pnl, wr };
+}
 
 export function Dashboard({ trades, balance, profileName = "Trader" }) {
+  const [exportFrom, setExportFrom] = useState("");
+  const [exportTo, setExportTo] = useState("");
+  const [showComplete, setShowComplete] = useState(() => shouldShowChallengeComplete(balance));
+
   const stats = computeStats(trades);
   const discipline = checkDiscipline(trades, balance);
+  const drawdown = computeDrawdown(trades);
+  const risk = computeRiskAnalysis(trades);
+  const month = useMemo(() => monthlyRecap(trades), [trades]);
   const maxWeekPnl = Math.max(...stats.weeklyPnl.map(w => Math.abs(w.pnl)), 1);
+
+  function handleCloseComplete() {
+    markChallengeCompleteShown();
+    setShowComplete(false);
+  }
+
+  function getExportTrades() {
+    return filterByDateRange(trades, exportFrom, exportTo);
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <ChallengeComplete open={showComplete} balance={balance} onClose={handleCloseComplete} />
+
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <Btn onClick={() => exportCsvReport(trades, balance)} variant="default" disabled={!trades.length}>Export CSV</Btn>
-        <Btn onClick={() => exportPdfReport(trades, balance, profileName)} variant="default" disabled={!trades.length}>Export PDF</Btn>
+        <Inp type="date" value={exportFrom} onChange={e => setExportFrom(e.target.value)} style={{ width: "auto" }} />
+        <Label color={C.muted}>to</Label>
+        <Inp type="date" value={exportTo} onChange={e => setExportTo(e.target.value)} style={{ width: "auto" }} />
+        <Btn onClick={() => exportCsvReport(getExportTrades(), balance)} variant="default" disabled={!trades.length}>Export CSV</Btn>
+        <Btn onClick={() => exportPdfReport(getExportTrades(), balance, profileName)} variant="default" disabled={!trades.length}>Export PDF</Btn>
         <Btn onClick={enableNotifications} variant="default">Enable Alerts</Btn>
         <Label color={C.muted}>{EXCHANGE} · USDT PnL</Label>
       </div>
@@ -35,6 +87,18 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
               <div style={{ color: C.dim, fontSize: 12, marginTop: 4 }}>{a.text}</div>
             </div>
           ))}
+        </div>
+      )}
+
+      {stats.total > 0 && (
+        <div style={{
+          background: C.surface, border: `1px solid ${C.border}`,
+          borderRadius: 8, padding: 16,
+        }}>
+          <Label color={C.dim}>Equity Curve</Label>
+          <div style={{ marginTop: 12 }}>
+            <EquityCurve trades={trades} height={140} />
+          </div>
         </div>
       )}
 
@@ -64,6 +128,30 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
 
       {stats.total > 0 && (
         <>
+          <div style={{
+            background: C.surface, border: `1px solid ${C.border}`,
+            borderRadius: 8, padding: 16,
+          }}>
+            <Label color={C.dim}>This Month</Label>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginTop: 12 }}>
+              <MiniStat label="Trades" value={month.count} />
+              <MiniStat label="Win Rate" value={month.wr != null ? `${month.wr}%` : "—"} color={month.wr >= 50 ? C.green : C.red} />
+              <MiniStat label="PnL" value={`${month.pnl >= 0 ? "+" : ""}${month.pnl.toFixed(2)} USDT`} color={month.pnl >= 0 ? C.green : C.red} />
+            </div>
+          </div>
+
+          <div className="stats-grid">
+            <Cell label="Max Drawdown" value={`${drawdown.maxDrawdownPct}%`} color={C.red} />
+            <Cell label="Current DD" value={`${drawdown.currentDrawdownPct}%`} color={drawdown.currentDrawdownPct > 5 ? C.red : C.dim} />
+            <Cell
+              label="Risk vs Actual"
+              value={risk.count ? `${risk.avgPlanned} / ${risk.avgActual}` : "—"}
+              color={C.yellow}
+              sub={risk.count ? "planned / avg loss" : "add planned risk on losses"}
+            />
+            <Cell label="Peak Balance" value={fmt(drawdown.peak)} color={C.green} />
+          </div>
+
           <div className="stats-grid">
             <Cell label="Win Rate" value={`${stats.winRate}%`} color={stats.winRate >= 50 ? C.green : C.red} />
             <Cell label="Profit Factor" value={stats.profitFactor ?? "—"} color={stats.profitFactor >= 1 ? C.green : C.red} />
@@ -78,6 +166,16 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
               color={stats.streakType === "WIN" ? C.green : stats.streakType === "LOSS" ? C.red : C.dim}
               sub={stats.streakType === "WIN" ? "wins" : stats.streakType === "LOSS" ? "losses" : ""}
             />
+          </div>
+
+          <div style={{
+            background: C.surface, border: `1px solid ${C.border}`,
+            borderRadius: 8, padding: 16,
+          }}>
+            <Label color={C.dim}>Daily PnL Heatmap (12 weeks)</Label>
+            <div style={{ marginTop: 12 }}>
+              <CalendarHeatmap trades={trades} />
+            </div>
           </div>
 
           {stats.weeklyPnl.length > 0 && (
@@ -168,14 +266,14 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
       )}
 
       {stats.total === 0 && (
-        <div style={{
-          background: C.surface, border: `1px solid ${C.border}`,
-          borderRadius: 8, padding: 40, textAlign: "center",
-        }}>
-          <Label color={C.muted}>No data yet</Label>
-          <div style={{ color: C.dim, fontSize: 12, marginTop: 8 }}>
-            Log your first trade in Journal to see statistics.
-          </div>
+        <EmptyState title="No data yet">
+          Log your first trade in Journal to see statistics.
+        </EmptyState>
+      )}
+
+      {balance >= TARGET_BALANCE && !showComplete && (
+        <div style={{ textAlign: "center", padding: 8 }}>
+          <Btn onClick={() => setShowComplete(true)} variant="primary">View Challenge Complete</Btn>
         </div>
       )}
     </div>

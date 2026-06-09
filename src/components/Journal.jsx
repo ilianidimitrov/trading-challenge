@@ -2,24 +2,33 @@ import { useMemo, useRef, useState } from "react";
 import { C } from "../constants/palette";
 import { PHASES } from "../constants/phases";
 import { BINANCE_PAIRS, MARKET_TYPES, EXCHANGE, DEFAULT_LEVERAGE } from "../constants/binance";
-import { createEmptyTradeForm, SETUP_TYPES } from "../types/trade";
+import { createEmptyTradeForm, mergeSetupTypes } from "../types/trade";
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 import { isSupabaseConfigured } from "../lib/config";
 import { uploadTradeScreenshot, fileToDataUrl } from "../lib/storage";
 import { fmt, getActivePhase } from "../utils/format";
 import { checkDiscipline } from "../utils/discipline";
+import { filterAndSortTrades, SORT_OPTIONS } from "../utils/tradeFilters";
+import { netPnl } from "../utils/tradeNormalize";
 import {
   calcPnlFromPrices, calcRrFromPrices, calcSuggestedPositionUsdt,
 } from "../utils/pnlCalc";
 import { exportTradesJson, importTradesJson } from "../utils/tradeExport";
 import { Btn, Inp, Label, Sel } from "./ui";
 import { ConfirmModal } from "./ui/ConfirmModal";
+import { EmptyState } from "./ui/EmptyState";
+import { Lightbox } from "./ui/Lightbox";
+import { ImportPreviewModal } from "./ui/ImportPreviewModal";
 
 export function Journal({
   entries, balance, onSave, onUpdate, onDelete, onImport,
   getBalanceBeforeTrade, useCloud, syncing, importLocalToCloud, localTradeCount,
 }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const toast = useToast();
+  const setupTypes = mergeSetupTypes(profile?.custom_setups);
+
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(createEmptyTradeForm());
@@ -27,19 +36,23 @@ export function Journal({
   const [warnings, setWarnings] = useState([]);
   const [filterResult, setFilterResult] = useState("ALL");
   const [filterSetup, setFilterSetup] = useState("");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("date-desc");
+  const [compact, setCompact] = useState(false);
+  const [partialOpen, setPartialOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState(null);
+  const [importPreview, setImportPreview] = useState(null);
   const fileRef = useRef(null);
   const screenshotRef = useRef(null);
 
   const activePhase = getActivePhase(PHASES, balance);
   const discipline = checkDiscipline(entries, balance);
 
-  const filtered = useMemo(() => entries.filter(e => {
-    if (filterResult !== "ALL" && e.result !== filterResult) return false;
-    if (filterSetup && e.setup !== filterSetup) return false;
-    return true;
-  }), [entries, filterResult, filterSetup]);
+  const filtered = useMemo(() => filterAndSortTrades(entries, {
+    search, filterResult, filterSetup, sort,
+  }), [entries, search, filterResult, filterSetup, sort]);
 
   const wins = entries.filter(e => e.result === "WIN").length;
   const loss = entries.filter(e => e.result === "LOSS").length;
@@ -67,23 +80,14 @@ export function Journal({
   }
 
   function autoCalcPnl() {
-    const pnl = calcPnlFromPrices(form);
-    if (pnl !== null) sf("pnl", String(pnl));
+    const pnlVal = calcPnlFromPrices(form);
+    if (pnlVal !== null) sf("pnl", String(pnlVal));
     const rr = calcRrFromPrices(form);
     if (rr) sf("rr", rr);
   }
 
-  function openNew() {
-    setEditingId(null);
-    setForm(createEmptyTradeForm(activePhase.risk, DEFAULT_LEVERAGE));
-    setErrors([]);
-    setWarnings(discipline.canTrade ? [] : discipline.alerts.filter(a => a.level === "danger").map(a => a.text));
-    setOpen(true);
-  }
-
-  function openEdit(entry) {
-    setEditingId(entry.id);
-    setForm({
+  function formFromEntry(entry) {
+    return {
       pair: entry.pair,
       marketType: entry.marketType || "USDT-M",
       dir: entry.dir,
@@ -101,7 +105,39 @@ export function Journal({
       setup: entry.setup ?? "",
       notes: entry.notes ?? "",
       screenshotUrl: entry.screenshotUrl ?? "",
-    });
+      tradeAt: entry.tradeAt ?? createEmptyTradeForm().tradeAt,
+      fees: entry.fees != null ? String(entry.fees) : "",
+      funding: entry.funding != null ? String(entry.funding) : "",
+      tp1: entry.tp1 ?? "",
+      tp2: entry.tp2 ?? "",
+      qtyTp1: entry.qtyTp1 ?? "",
+      qtyTp2: entry.qtyTp2 ?? "",
+      plannedRiskUsdt: entry.plannedRiskUsdt != null ? String(entry.plannedRiskUsdt) : "",
+    };
+  }
+
+  function openNew() {
+    setEditingId(null);
+    setForm(createEmptyTradeForm(activePhase.risk, DEFAULT_LEVERAGE));
+    setPartialOpen(false);
+    setErrors([]);
+    setWarnings(discipline.canTrade ? [] : discipline.alerts.filter(a => a.level === "danger").map(a => a.text));
+    setOpen(true);
+  }
+
+  function openEdit(entry) {
+    setEditingId(entry.id);
+    setForm(formFromEntry(entry));
+    setPartialOpen(Boolean(entry.tp1 || entry.tp2));
+    setErrors([]);
+    setWarnings([]);
+    setOpen(true);
+  }
+
+  function openDuplicate(entry) {
+    setEditingId(null);
+    setForm(formFromEntry(entry));
+    setPartialOpen(Boolean(entry.tp1 || entry.tp2));
     setErrors([]);
     setWarnings([]);
     setOpen(true);
@@ -121,6 +157,7 @@ export function Journal({
       sf("screenshotUrl", url);
     } catch (err) {
       setErrors([err.message]);
+      toast.error(err.message);
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -137,6 +174,7 @@ export function Journal({
       setWarnings(result.warnings || []);
       return;
     }
+    toast.success(editingId ? "Trade updated" : "Trade saved");
     setErrors([]);
     setWarnings(result.warnings || []);
     setForm(createEmptyTradeForm(activePhase.risk));
@@ -144,15 +182,27 @@ export function Journal({
     setOpen(false);
   }
 
-  async function handleImport(e) {
+  async function handleImportFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      await onImport(await importTradesJson(file));
+      const trades = await importTradesJson(file);
+      setImportPreview(trades);
     } catch (err) {
-      alert(err.message || "Import failed.");
+      toast.error(err.message || "Import failed.");
     }
     e.target.value = "";
+  }
+
+  async function confirmImport() {
+    if (!importPreview) return;
+    try {
+      await onImport(importPreview);
+      toast.success(`Imported ${importPreview.length} trades`);
+      setImportPreview(null);
+    } catch (err) {
+      toast.error(err.message || "Import failed.");
+    }
   }
 
   return (
@@ -161,12 +211,15 @@ export function Journal({
         <Btn onClick={openNew} variant="primary">+ New Trade</Btn>
         <Btn onClick={() => exportTradesJson(entries)} variant="default">Export JSON</Btn>
         <Btn onClick={() => fileRef.current?.click()} variant="default">Import JSON</Btn>
-        <input ref={fileRef} type="file" accept=".json" onChange={handleImport} style={{ display: "none" }} />
+        <input ref={fileRef} type="file" accept=".json" onChange={handleImportFile} style={{ display: "none" }} />
         {useCloud && localTradeCount > 0 && (
           <Btn onClick={importLocalToCloud} variant="default" disabled={syncing}>
             {syncing ? "Syncing..." : `Import ${localTradeCount} local`}
           </Btn>
         )}
+        <Btn onClick={() => setCompact(c => !c)} variant="default">
+          {compact ? "Expanded" : "Compact"}
+        </Btn>
         <Label color={C.muted}>{EXCHANGE} Futures · USDT PnL</Label>
       </div>
 
@@ -184,7 +237,10 @@ export function Journal({
             <Stat label={`${activePhase.tag} Risk`} value={`${activePhase.risk}%`} color={C.yellow} />
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <Label color={C.dim}>Filter:</Label>
+            <Inp value={search} onChange={e => setSearch(e.target.value)} placeholder="Search pair, setup, notes..." style={{ minWidth: 180, flex: 1 }} />
+            <Sel value={sort} onChange={e => setSort(e.target.value)} style={{ width: "auto", minWidth: 130 }}>
+              {SORT_OPTIONS.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
+            </Sel>
             <Sel value={filterResult} onChange={e => setFilterResult(e.target.value)} style={{ width: "auto", minWidth: 100 }}>
               <option value="ALL">All</option>
               <option value="WIN">Wins</option>
@@ -193,7 +249,7 @@ export function Journal({
             </Sel>
             <Sel value={filterSetup} onChange={e => setFilterSetup(e.target.value)} style={{ width: "auto", minWidth: 140 }}>
               <option value="">All setups</option>
-              {SETUP_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
+              {setupTypes.map(s => <option key={s} value={s}>{s}</option>)}
             </Sel>
           </div>
         </>
@@ -208,6 +264,9 @@ export function Journal({
             </div>
           )}
           <div className="journal-grid" style={{ marginTop: 14, marginBottom: 12 }}>
+            <Field label="Trade Date & Time">
+              <Inp type="datetime-local" value={form.tradeAt} onChange={e => sf("tradeAt", e.target.value)} />
+            </Field>
             <Field label="Pair (Binance)">
               <Sel value={form.pair} onChange={e => sf("pair", e.target.value)}>
                 {BINANCE_PAIRS.map(p => <option key={p} value={p}>{p}</option>)}
@@ -250,25 +309,37 @@ export function Journal({
                 <Btn onClick={autoCalcPnl} variant="default">Auto</Btn>
               </div>
             </Field>
+            <Field label="Fees (USDT)">
+              <Inp value={form.fees} onChange={e => sf("fees", e.target.value)} placeholder="0.50" type="number" step="0.01" />
+            </Field>
+            <Field label="Funding (USDT)">
+              <Inp value={form.funding} onChange={e => sf("funding", e.target.value)} placeholder="0.20" type="number" step="0.01" />
+            </Field>
             <Field label="RR">
               <Inp value={form.rr} onChange={e => sf("rr", e.target.value)} placeholder="1:2.5" />
             </Field>
             <Field label={`Risk % (${activePhase.tag})`}>
               <Inp value={form.riskPct} onChange={e => sf("riskPct", e.target.value)} type="number" step="0.1" />
             </Field>
+            <Field label="Planned Risk (USDT)">
+              <Inp value={form.plannedRiskUsdt} onChange={e => sf("plannedRiskUsdt", e.target.value)} placeholder="5.00" type="number" step="0.01" />
+            </Field>
             <Field label="Setup">
               <Sel value={form.setup} onChange={e => sf("setup", e.target.value)}>
                 <option value="">— Select —</option>
-                {SETUP_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
+                {setupTypes.map(s => <option key={s} value={s}>{s}</option>)}
               </Sel>
             </Field>
             <Field label="Screenshot">
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
                 <Btn onClick={() => screenshotRef.current?.click()} variant="default" disabled={uploading}>
                   {uploading ? "..." : "Upload"}
                 </Btn>
                 <Inp value={form.screenshotUrl} onChange={e => sf("screenshotUrl", e.target.value)} placeholder="URL or upload" />
                 <input ref={screenshotRef} type="file" accept="image/*" onChange={handleScreenshot} style={{ display: "none" }} />
+                {form.screenshotUrl && (
+                  <img src={form.screenshotUrl} alt="" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 4, cursor: "pointer" }} onClick={() => setLightboxSrc(form.screenshotUrl)} />
+                )}
               </div>
             </Field>
             <Field label="Result">
@@ -279,6 +350,20 @@ export function Journal({
             <Field label="Notes" className="journal-full">
               <Inp value={form.notes} onChange={e => sf("notes", e.target.value)} placeholder="Funding, liquidation risk, setup notes..." />
             </Field>
+          </div>
+
+          <div style={{ marginBottom: 12 }}>
+            <Btn onClick={() => setPartialOpen(o => !o)} variant="default">
+              {partialOpen ? "Hide" : "Show"} Partial Close (TP1/TP2)
+            </Btn>
+            {partialOpen && (
+              <div className="journal-grid" style={{ marginTop: 10 }}>
+                <Field label="TP1 Price"><Inp value={form.tp1} onChange={e => sf("tp1", e.target.value)} type="number" step="any" /></Field>
+                <Field label="TP1 Qty"><Inp value={form.qtyTp1} onChange={e => sf("qtyTp1", e.target.value)} type="number" step="any" /></Field>
+                <Field label="TP2 Price"><Inp value={form.tp2} onChange={e => sf("tp2", e.target.value)} type="number" step="any" /></Field>
+                <Field label="TP2 Qty"><Inp value={form.qtyTp2} onChange={e => sf("qtyTp2", e.target.value)} type="number" step="any" /></Field>
+              </div>
+            )}
           </div>
 
           {suggestedNotional && (
@@ -301,25 +386,69 @@ export function Journal({
       )}
 
       {filtered.length === 0 ? (
-        <EmptyState hasEntries={entries.length > 0} />
+        <EmptyState title={entries.length > 0 ? "No trades match filter" : "No trades recorded"}>
+          {entries.length > 0
+            ? "Try changing search or filters."
+            : "Log every Binance Futures trade with entry, SL, TP, and leverage. PnL is entered in USDT."}
+        </EmptyState>
       ) : (
-        filtered.map(e => <TradeCard key={e.id} e={e} onEdit={openEdit} onDelete={setDeleteId} />)
+        filtered.map(e => (
+          <TradeCard
+            key={e.id}
+            e={e}
+            compact={compact}
+            onEdit={openEdit}
+            onDuplicate={openDuplicate}
+            onDelete={setDeleteId}
+            onLightbox={setLightboxSrc}
+          />
+        ))
       )}
 
       <ConfirmModal
         open={deleteId !== null}
         title="Delete Trade"
         message="Are you sure? USDT balance will be recalculated from trade history."
-        onConfirm={() => { onDelete(deleteId); setDeleteId(null); }}
+        onConfirm={() => { onDelete(deleteId); setDeleteId(null); toast.success("Trade deleted"); }}
         onCancel={() => setDeleteId(null)}
+      />
+      <Lightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+      <ImportPreviewModal
+        open={importPreview != null}
+        trades={importPreview || []}
+        onConfirm={confirmImport}
+        onCancel={() => setImportPreview(null)}
       />
     </div>
   );
 }
 
-function TradeCard({ e, onEdit, onDelete }) {
+function TradeCard({ e, compact, onEdit, onDuplicate, onDelete, onLightbox }) {
   const p = parseFloat(e.pnl);
+  const net = netPnl(e);
   const rc = e.result === "WIN" ? C.green : e.result === "LOSS" ? C.red : C.yellow;
+  const hasFees = parseFloat(e.fees) || parseFloat(e.funding);
+
+  if (compact) {
+    return (
+      <div style={{
+        background: C.surface, border: `1px solid ${C.border}`,
+        borderLeft: `3px solid ${rc}`, borderRadius: 8, padding: "8px 12px",
+        display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8,
+      }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", minWidth: 0 }}>
+          <span style={{ color: rc, fontWeight: 800, fontSize: 11 }}>{e.dir}</span>
+          <span style={{ color: C.bright, fontWeight: 700, fontSize: 13 }}>{e.pair}</span>
+          {e.setup && <Label color={C.muted}>{e.setup}</Label>}
+          <Label color={C.muted}>{e.date}</Label>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <span style={{ color: rc, fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{p > 0 ? "+" : ""}{p.toFixed(2)}</span>
+          <Btn onClick={() => onEdit(e)} variant="default">Edit</Btn>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -337,6 +466,9 @@ function TradeCard({ e, onEdit, onDelete }) {
         </div>
         <div style={{ textAlign: "right" }}>
           <div style={{ color: rc, fontWeight: 800, fontSize: 16, fontVariantNumeric: "tabular-nums" }}>{p > 0 ? "+" : ""}{p.toFixed(2)} USDT</div>
+          {hasFees && (
+            <Label color={C.muted}>Net {net >= 0 ? "+" : ""}{net.toFixed(2)} after fees</Label>
+          )}
           <Label color={C.muted}>{e.date}</Label>
         </div>
       </div>
@@ -345,13 +477,17 @@ function TradeCard({ e, onEdit, onDelete }) {
         {e.exit && <span>Exit: {e.exit}</span>}
         {e.sl && <span>SL: {e.sl}</span>}
         {e.tp && <span>TP: {e.tp}</span>}
+        {(e.tp1 || e.tp2) && <span>Partial: TP1 {e.tp1 || "—"} / TP2 {e.tp2 || "—"}</span>}
         {e.positionUsdt && <span>Size: {e.positionUsdt} USDT</span>}
         {e.quantity && <span>Qty: {e.quantity}</span>}
       </div>
       {e.screenshotUrl && (
-        <a href={e.screenshotUrl} target="_blank" rel="noreferrer" style={{ color: C.blue, fontSize: 11, marginTop: 6, display: "inline-block" }}>
-          Binance chart screenshot
-        </a>
+        <img
+          src={e.screenshotUrl}
+          alt="Chart"
+          onClick={() => onLightbox(e.screenshotUrl)}
+          style={{ width: 80, height: 50, objectFit: "cover", borderRadius: 4, marginTop: 8, cursor: "pointer", border: `1px solid ${C.border}` }}
+        />
       )}
       {e.notes && <div style={{ color: C.dim, fontSize: 11, marginTop: 6, fontStyle: "italic" }}>"{e.notes}"</div>}
       <div style={{ marginTop: 8, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
@@ -360,6 +496,7 @@ function TradeCard({ e, onEdit, onDelete }) {
           <Label color={e.balAfter > e.balBefore ? C.green : C.red}>{fmt(e.balAfter)}</Label>
         </div>
         <div style={{ display: "flex", gap: 6 }}>
+          <Btn onClick={() => onDuplicate(e)} variant="default">Duplicate</Btn>
           <Btn onClick={() => onEdit(e)} variant="default">Edit</Btn>
           <Btn onClick={() => onDelete(e.id)} variant="danger">Delete</Btn>
         </div>
@@ -373,19 +510,6 @@ function Stat({ label, value, color = C.bright }) {
     <div>
       <Label color={C.dim}>{label}</Label>
       <div style={{ color, fontWeight: 700, marginTop: 2 }}>{value}</div>
-    </div>
-  );
-}
-
-function EmptyState({ hasEntries }) {
-  return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: 40, textAlign: "center" }}>
-      <Label color={C.muted}>{hasEntries ? "No trades match filter" : "No trades recorded"}</Label>
-      <div style={{ color: C.dim, fontSize: 12, marginTop: 8, lineHeight: 1.6 }}>
-        {hasEntries ? "Try changing the filters." : (
-          <>Log every Binance Futures trade with entry, SL, TP, and leverage.<br />PnL is entered in USDT.</>
-        )}
-      </div>
     </div>
   );
 }

@@ -85,7 +85,7 @@ export function exportPdfReport(trades, balance, profileName = "Trader") {
   @media print { body { background: white; color: black; } .card { border-color: #ccc; } }
 </style></head><body>
   <h1>Binance Futures Challenge — ${month}</h1>
-  <div class="sub">${EXCHANGE} USDT-M · ${profileName} · Generated ${new Date().toLocaleString("bg-BG")}</div>
+  <div class="sub">${EXCHANGE} USDT-M · ${profileName} · Generated ${new Date().toLocaleString("en-US")}</div>
   <div class="grid">
     <div class="card"><label>Balance</label><val>${fmt(balance)}</val></div>
     <div class="card"><label>Trades</label><val>${stats.total}</val></div>

@@ -69,6 +69,20 @@ export function AuthProvider({ children }) {
     setProfile(null);
   };
 
+  const resetPassword = async (email) => {
+    if (!supabase) throw new Error("Supabase is not configured.");
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/`,
+    });
+    if (error) throw error;
+  };
+
+  const updatePassword = async (password) => {
+    if (!supabase) throw new Error("Supabase is not configured.");
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+  };
+
   const refreshProfile = useCallback(async () => {
     if (user?.id) await loadProfile(user.id);
   }, [user?.id, loadProfile]);
@@ -81,6 +95,8 @@ export function AuthProvider({ children }) {
       signUp,
       signIn,
       signOut,
+      resetPassword,
+      updatePassword,
       refreshProfile,
       isConfigured: isSupabaseConfigured(),
     }}>

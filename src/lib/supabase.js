@@ -76,6 +76,26 @@ export async function fetchUserPublicTrades(userId, limit = 10) {
   return data || [];
 }
 
+function parseOptionalFloat(val) {
+  if (val === "" || val == null) return null;
+  const n = parseFloat(val);
+  return Number.isFinite(n) ? n : null;
+}
+
+function tradeAtToIso(trade) {
+  if (trade.tradeAt) {
+    const d = new Date(trade.tradeAt);
+    if (!Number.isNaN(d.getTime())) return d.toISOString();
+  }
+  if (trade.createdAt) return new Date(trade.createdAt).toISOString();
+  return new Date().toISOString();
+}
+
+function formatTradeDate(isoOrMs) {
+  const d = typeof isoOrMs === "number" ? new Date(isoOrMs) : new Date(isoOrMs);
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+}
+
 function tradeToDb(trade, userId) {
   return {
     user_id: userId,
@@ -96,12 +116,25 @@ function tradeToDb(trade, userId) {
     setup: trade.setup || null,
     notes: trade.notes || null,
     screenshot_url: trade.screenshotUrl || null,
+    trade_at: tradeAtToIso(trade),
+    fees: parseOptionalFloat(trade.fees),
+    funding: parseOptionalFloat(trade.funding),
+    tp1: parseOptionalFloat(trade.tp1),
+    tp2: parseOptionalFloat(trade.tp2),
+    qty_tp1: parseOptionalFloat(trade.qtyTp1),
+    qty_tp2: parseOptionalFloat(trade.qtyTp2),
+    planned_risk_usdt: parseOptionalFloat(trade.plannedRiskUsdt),
     created_at: trade.createdAt ? new Date(trade.createdAt).toISOString() : new Date().toISOString(),
   };
 }
 
 function dbToTrade(row) {
   const createdAt = new Date(row.created_at).getTime();
+  const tradeAtMs = row.trade_at ? new Date(row.trade_at).getTime() : createdAt;
+  const pad = n => String(n).padStart(2, "0");
+  const td = new Date(tradeAtMs);
+  const tradeAtLocal = `${td.getFullYear()}-${pad(td.getMonth() + 1)}-${pad(td.getDate())}T${pad(td.getHours())}:${pad(td.getMinutes())}`;
+
   return {
     id: row.id,
     userId: row.user_id,
@@ -122,7 +155,16 @@ function dbToTrade(row) {
     setup: row.setup ?? "",
     notes: row.notes ?? "",
     screenshotUrl: row.screenshot_url ?? "",
-    date: new Date(row.created_at).toLocaleDateString("bg-BG"),
+    tradeAt: tradeAtLocal,
+    fees: row.fees ?? "",
+    funding: row.funding ?? "",
+    tp1: row.tp1 ?? "",
+    tp2: row.tp2 ?? "",
+    qtyTp1: row.qty_tp1 ?? "",
+    qtyTp2: row.qty_tp2 ?? "",
+    plannedRiskUsdt: row.planned_risk_usdt ?? "",
+    date: formatTradeDate(tradeAtMs),
     createdAt,
+    tradeAtMs,
   };
 }

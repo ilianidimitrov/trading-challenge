@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { C } from "../constants/palette";
 import { fetchProfile, fetchUserPublicTrades, fetchLeaderboard } from "../lib/supabase";
 import { isSupabaseConfigured } from "../lib/config";
+import { computeStats } from "../utils/stats";
 import { fmt } from "../utils/format";
 import { Btn, Label } from "./ui";
+import { SkeletonCard } from "./ui/Skeleton";
 
 export function Profile({ userId, onBack }) {
   const [profile, setProfile] = useState(null);
@@ -20,7 +22,7 @@ export function Profile({ userId, onBack }) {
     Promise.all([
       fetchProfile(userId),
       fetchLeaderboard(),
-      fetchUserPublicTrades(userId, 10),
+      fetchUserPublicTrades(userId, 100),
     ])
       .then(([prof, board, recent]) => {
         setProfile(prof);
@@ -31,10 +33,24 @@ export function Profile({ userId, onBack }) {
       .finally(() => setLoading(false));
   }, [userId]);
 
+  const tradeStats = useMemo(() => {
+    if (!trades.length) return null;
+    const normalized = trades.map((t, i) => ({
+      ...t,
+      pnl: parseFloat(t.pnl),
+      createdAt: t.created_at ? new Date(t.created_at).getTime() : Date.now() - i,
+    }));
+    return computeStats(normalized);
+  }, [trades]);
+
   if (!userId) return null;
 
   if (loading) {
-    return <div style={{ color: C.dim, padding: 20 }}>Loading...</div>;
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <SkeletonCard lines={4} />
+      </div>
+    );
   }
 
   if (!profile) {
@@ -49,11 +65,18 @@ export function Profile({ userId, onBack }) {
         background: C.surface, border: `1px solid ${C.border}`,
         borderRadius: 8, padding: 20,
       }}>
-        <Label color={C.muted}>Public Profile</Label>
-        <div style={{ color: C.bright, fontSize: 22, fontWeight: 800, marginTop: 8 }}>
-          {profile.display_name || profile.username}
+        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+          {profile.avatar_url && (
+            <img src={profile.avatar_url} alt="" style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover" }} />
+          )}
+          <div>
+            <Label color={C.muted}>Public Profile</Label>
+            <div className="text-title" style={{ fontSize: 22, marginTop: 8 }}>
+              {profile.display_name || profile.username}
+            </div>
+            <div style={{ color: C.dim, fontSize: 12, marginTop: 4 }}>@{profile.username}</div>
+          </div>
         </div>
-        <div style={{ color: C.dim, fontSize: 12, marginTop: 4 }}>@{profile.username}</div>
 
         {stats && (
           <div style={{
@@ -67,6 +90,19 @@ export function Profile({ userId, onBack }) {
             <Stat label="Avg RR" value={stats.avg_rr || "—"} />
           </div>
         )}
+
+        {tradeStats && (
+          <div style={{
+            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))",
+            gap: 16, marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.border}`,
+          }}>
+            <Stat label="Best Streak" value={tradeStats.currentStreak > 0 ? `${tradeStats.currentStreak} ${tradeStats.streakType}` : "—"} color={tradeStats.streakType === "WIN" ? C.green : C.red} />
+            <Stat label="Profit Factor" value={tradeStats.profitFactor ?? "—"} />
+            {tradeStats.bySetup.slice(0, 3).map(s => (
+              <Stat key={s.setup} label={`WR ${s.setup}`} value={`${s.winRate}%`} color={s.winRate >= 50 ? C.green : C.red} />
+            ))}
+          </div>
+        )}
       </div>
 
       <div style={{
@@ -78,17 +114,18 @@ export function Profile({ userId, onBack }) {
           <div style={{ color: C.dim, fontSize: 12, marginTop: 12 }}>No public trades.</div>
         ) : (
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-            {trades.map((t, i) => {
+            {trades.slice(0, 15).map((t, i) => {
               const pnl = parseFloat(t.pnl);
               const rc = t.result === "WIN" ? C.green : t.result === "LOSS" ? C.red : C.yellow;
               return (
                 <div key={i} style={{
                   display: "flex", justifyContent: "space-between",
-                  padding: "8px 0", borderBottom: i < trades.length - 1 ? `1px solid ${C.border}` : "none",
+                  padding: "8px 0", borderBottom: i < Math.min(trades.length, 15) - 1 ? `1px solid ${C.border}` : "none",
                 }}>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <span style={{ color: rc, fontSize: 10, fontWeight: 800 }}>{t.dir}</span>
                     <span style={{ color: C.text, fontWeight: 600 }}>{t.pair}</span>
+                    {t.setup && <Label color={C.muted}>{t.setup}</Label>}
                     {t.rr && <Label color={C.muted}>RR {t.rr}</Label>}
                   </div>
                   <span style={{ color: rc, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>

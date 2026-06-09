@@ -12,7 +12,7 @@ import { attachBalances } from "../utils/tradeBalances";
 import { computeBalance } from "../utils/balance";
 import { validateTrade } from "../utils/tradeValidation";
 import { notifyTelegram } from "../lib/telegram";
-import { formatPairDisplay } from "../utils/pnlCalc";
+import { normalizeTrade } from "../utils/tradeNormalize";
 
 export function useTradeSync() {
   const { user, profile, isConfigured } = useAuth();
@@ -136,22 +136,3 @@ export function useTradeSync() {
   };
 }
 
-function normalizeTrade(form, id = Date.now(), createdAt = Date.now()) {
-  return {
-    ...form,
-    id,
-    pair: formatPairDisplay(form.pair),
-    marketType: form.marketType || "USDT-M",
-    pnl: parseFloat(form.pnl),
-    entry: form.entry || "",
-    exit: form.exit || "",
-    sl: form.sl || "",
-    tp: form.tp || "",
-    quantity: form.quantity || "",
-    positionUsdt: form.positionUsdt || "",
-    leverage: form.leverage || "",
-    riskPct: form.riskPct ? parseFloat(form.riskPct) : null,
-    date: new Date(createdAt).toLocaleDateString("bg-BG"),
-    createdAt,
-  };
-}

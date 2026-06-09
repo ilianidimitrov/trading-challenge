@@ -1,13 +1,32 @@
+import { useEffect, useState } from "react";
 import { C } from "../constants/palette";
 import { fmt, phaseMult } from "../utils/format";
+import { loadChecklist, saveChecklist } from "../utils/phaseChecklist";
+import { useAuth } from "../contexts/AuthContext";
 import { Bar, Label } from "./ui";
 
 export function PhaseCard({ phase, bal, selected, onSelect }) {
+  const { user } = useAuth();
   const done = bal >= phase.to;
   const active = bal >= phase.from && bal < phase.to;
   const pct = done ? 100 : active ? ((bal - phase.from) / (phase.to - phase.from)) * 100 : 0;
   const beWR = Math.round(100 / (1 + phase.rr));
   const statusColor = done ? C.green : active ? C.yellow : C.muted;
+
+  const [checked, setChecked] = useState(() => loadChecklist(user?.id, phase.id, phase.rules.length));
+
+  useEffect(() => {
+    setChecked(loadChecklist(user?.id, phase.id, phase.rules.length));
+  }, [user?.id, phase.id, phase.rules.length]);
+
+  function toggleRule(i) {
+    const next = [...checked];
+    next[i] = !next[i];
+    setChecked(next);
+    saveChecklist(user?.id, phase.id, next);
+  }
+
+  const doneCount = checked.filter(Boolean).length;
 
   return (
     <div
@@ -58,20 +77,26 @@ export function PhaseCard({ phase, bal, selected, onSelect }) {
       </div>
 
       {selected && (
-        <div style={{ marginTop: 16, borderTop: `1px solid ${C.border}`, paddingTop: 14 }}>
+        <div style={{ marginTop: 16, borderTop: `1px solid ${C.border}`, paddingTop: 14 }} onClick={e => e.stopPropagation()}>
           <div style={{ color: C.dim, fontSize: 12, lineHeight: 1.6, marginBottom: 12 }}>{phase.note}</div>
-          <Label>Rules</Label>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <Label>Rules Checklist</Label>
+            <Label color={C.muted}>{doneCount}/{phase.rules.length}</Label>
+          </div>
           <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 0 }}>
             {phase.rules.map((r, i) => (
-              <div key={i} style={{
-                display: "flex", gap: 10, padding: "7px 0",
+              <label key={i} style={{
+                display: "flex", gap: 10, padding: "7px 0", alignItems: "flex-start", cursor: "pointer",
                 borderBottom: i < phase.rules.length - 1 ? `1px solid ${C.border}` : "none",
               }}>
-                <span style={{ color: C.muted, fontSize: 11, minWidth: 18, fontVariantNumeric: "tabular-nums" }}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span style={{ color: C.text, fontSize: 12, lineHeight: 1.5 }}>{r}</span>
-              </div>
+                <input
+                  type="checkbox"
+                  checked={checked[i]}
+                  onChange={() => toggleRule(i)}
+                  style={{ marginTop: 3 }}
+                />
+                <span style={{ color: checked[i] ? C.muted : C.text, fontSize: 12, lineHeight: 1.5, textDecoration: checked[i] ? "line-through" : "none" }}>{r}</span>
+              </label>
             ))}
           </div>
         </div>

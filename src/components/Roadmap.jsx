@@ -1,11 +1,29 @@
 import { C } from "../constants/palette";
 import { PHASES } from "../constants/phases";
 import { fmt, phaseMult } from "../utils/format";
+import { computeMilestoneHistory } from "../utils/milestones";
 import { Bar, Label } from "./ui";
 
-export function Roadmap({ bal }) {
+export function Roadmap({ bal, trades = [] }) {
+  const milestones = computeMilestoneHistory(trades);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {milestones.length > 0 && (
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: 16 }}>
+          <Label color={C.dim}>Milestone History</Label>
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+            {milestones.map((m, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+                <span style={{ color: C.green, fontWeight: 700 }}>{m.phase.tag}</span>
+                <span style={{ color: C.text }}>{fmt(m.balance)}</span>
+                <span style={{ color: C.muted }}>{m.date}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: 16 }}>
         <Label color={C.dim}>Phase Timeline</Label>
         <div style={{ marginTop: 14 }}>
@@ -14,6 +32,7 @@ export function Roadmap({ bal }) {
             const active = bal >= p.from && bal < p.to;
             const sc     = done ? C.green : active ? C.yellow : C.muted;
             const pct    = done ? 100 : active ? ((bal - p.from) / (p.to - p.from)) * 100 : 0;
+            const milestone = milestones.find(m => m.phase.id === p.id);
             return (
               <div key={p.id} style={{ display: "flex", gap: 14 }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 24, flexShrink: 0 }}>
@@ -38,7 +57,10 @@ export function Roadmap({ bal }) {
                       </span>
                       <Label color={C.muted}>{p.label}</Label>
                     </div>
-                    <Label color={C.muted}>×{phaseMult(p)}</Label>
+                    <div style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
+                      {milestone && <Label color={C.green}>Reached {milestone.date}</Label>}
+                      <Label color={C.muted}>×{phaseMult(p)}</Label>
+                    </div>
                   </div>
                   <div style={{ display: "flex", gap: 12, marginTop: 3 }}>
                     <Label color={C.muted}>Risk {p.risk}%</Label>

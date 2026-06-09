@@ -1,6 +1,8 @@
 import { C, STARTING_BALANCE, TARGET_BALANCE } from "../../constants/palette";
 import { EXCHANGE } from "../../constants/binance";
+import { useTheme } from "../../contexts/ThemeContext";
 import { fmt } from "../../utils/format";
+import { Btn } from "../ui";
 import { LoginForm } from "./LoginForm";
 
 const FEATURES = [
@@ -10,10 +12,15 @@ const FEATURES = [
 ];
 
 export function LoginScreen() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="login-page">
       <div className="login-glow login-glow-a" />
       <div className="login-glow login-glow-b" />
+      <div style={{ position: "absolute", top: 16, right: 16, zIndex: 2 }}>
+        <Btn onClick={toggleTheme} variant="default">{theme === "dark" ? "Light" : "Dark"}</Btn>
+      </div>
 
       <div className="login-shell">
         <section className="login-hero">

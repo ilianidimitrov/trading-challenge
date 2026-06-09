@@ -1,10 +1,26 @@
+import { useEffect, useRef, useState } from "react";
 import { C, PHASE_COLORS, STARTING_BALANCE, TARGET_BALANCE } from "../../constants/palette";
 import { PHASES } from "../../constants/phases";
 import { fmt, getOverallProgress } from "../../utils/format";
+import { daysInCurrentPhase } from "../../utils/milestones";
+import { PhaseRing } from "../PhaseRing";
 import { Cell, Label } from "../ui";
 
-export function Header({ bal, active }) {
+export function Header({ bal, active, trades = [] }) {
   const overall = getOverallProgress(bal, STARTING_BALANCE, TARGET_BALANCE);
+  const { days } = daysInCurrentPhase(trades, bal);
+  const accent = PHASE_COLORS[(active.id || 1) - 1];
+  const prevTag = useRef(active.tag);
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    if (prevTag.current !== active.tag) {
+      setPulse(true);
+      const t = setTimeout(() => setPulse(false), 700);
+      prevTag.current = active.tag;
+      return () => clearTimeout(t);
+    }
+  }, [active.tag]);
 
   return (
     <>
@@ -13,24 +29,26 @@ export function Header({ bal, active }) {
           display: "flex", justifyContent: "space-between", alignItems: "flex-start",
           marginBottom: 20, flexWrap: "wrap", gap: 16,
         }}>
-          <div>
-            <Label color={C.muted}>Binance Futures Challenge</Label>
-            <div style={{
-              color: C.bright, fontSize: 28, fontWeight: 900, letterSpacing: -1,
-              marginTop: 4, fontVariantNumeric: "tabular-nums",
-            }}>
-              {fmt(STARTING_BALANCE)} <span style={{ color: C.muted, fontWeight: 300 }}>→</span> {fmt(TARGET_BALANCE)} USDT
-            </div>
-            <div style={{ color: C.dim, fontSize: 12, marginTop: 4 }}>
-              Binance USDT-M · 10 phases · {PHASES.length} risk tiers
+          <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+            {bal < TARGET_BALANCE && (
+              <PhaseRing balance={bal} phase={active} pulse={pulse} />
+            )}
+            <div>
+              <Label color={C.muted}>Binance Futures Challenge</Label>
+              <div className="text-title" style={{ fontSize: 28, marginTop: 4, fontVariantNumeric: "tabular-nums" }}>
+                {fmt(STARTING_BALANCE)} <span style={{ color: C.muted, fontWeight: 300 }}>→</span> {fmt(TARGET_BALANCE)} USDT
+              </div>
+              <div style={{ color: C.dim, fontSize: 12, marginTop: 4 }}>
+                Binance USDT-M · 10 phases · {PHASES.length} risk tiers
+                {bal < TARGET_BALANCE && (
+                  <span> · {days} day{days !== 1 ? "s" : ""} in {active.tag}</span>
+                )}
+              </div>
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
             <Label color={C.dim}>Current Balance</Label>
-            <div style={{
-              color: C.bright, fontSize: 26, fontWeight: 800, marginTop: 4,
-              fontVariantNumeric: "tabular-nums",
-            }}>
+            <div className="text-stat" style={{ fontSize: 26, marginTop: 4 }}>
               {fmt(bal)}
             </div>
             <div style={{ color: C.dim, fontSize: 11, marginTop: 2 }}>
@@ -44,7 +62,10 @@ export function Header({ bal, active }) {
             <Label color={C.dim}>Overall Progress</Label>
             <Label color={C.dim}>{overall.toFixed(4)}%</Label>
           </div>
-          <div style={{ display: "flex", gap: 2, height: 6, borderRadius: 3, overflow: "hidden" }}>
+          <div style={{
+            display: "flex", gap: 2, height: 6, borderRadius: 3, overflow: "hidden",
+            borderBottom: `2px solid ${accent}44`,
+          }}>
             {PHASES.map(p => {
               const w = (p.to - p.from) / (TARGET_BALANCE - STARTING_BALANCE) * 100;
               const f = bal >= p.to ? 1 : bal > p.from ? (bal - p.from) / (p.to - p.from) : 0;
