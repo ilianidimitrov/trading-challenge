@@ -1,4 +1,4 @@
-import { C, TARGET_BALANCE } from "../constants/palette";
+import { C, STARTING_BALANCE, TARGET_BALANCE } from "../constants/palette";
 import { fmt } from "../utils/format";
 import { Btn, Label } from "./ui";
 
@@ -45,7 +45,7 @@ export function ChallengeComplete({ open, balance, onClose }) {
           {fmt(balance)}
         </div>
         <p style={{ color: "var(--color-dim)", fontSize: 13, lineHeight: 1.6, marginBottom: 20 }}>
-          From $100 to {fmt(TARGET_BALANCE)} USDT. Discipline wins.
+          From {fmt(STARTING_BALANCE)} to {fmt(TARGET_BALANCE)} USDT. Discipline wins.
         </p>
         <Btn onClick={onClose} variant="primary">Continue</Btn>
       </div>
