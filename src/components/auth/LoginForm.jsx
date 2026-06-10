@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useToast } from "../../contexts/ToastContext";
 import { Btn } from "../ui";
 
 export function LoginForm({ onSuccess }) {
   const { signIn, signUp, resetPassword } = useAuth();
+  const toast = useToast();
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,37 +13,73 @@ export function LoginForm({ onSuccess }) {
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
+  const [pendingEmail, setPendingEmail] = useState(null);
   const [loading, setLoading] = useState(false);
 
   function switchMode(next) {
     setMode(next);
     setError("");
     setInfo("");
+    setPendingEmail(null);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setInfo("");
+    setPendingEmail(null);
     setLoading(true);
     try {
       if (mode === "login") {
         await signIn(email, password);
+        onSuccess?.();
       } else if (mode === "register") {
         if (!username.trim()) throw new Error("Username is required.");
-        await signUp(email, password, username.trim(), displayName.trim() || username.trim());
+        const data = await signUp(email, password, username.trim(), displayName.trim() || username.trim());
+        if (data.needsEmailConfirmation) {
+          setPendingEmail(email.trim());
+          toast.success("Confirmation email sent — check your inbox.");
+          return;
+        }
+        onSuccess?.();
       } else if (mode === "forgot") {
         if (!email.trim()) throw new Error("Email is required.");
         await resetPassword(email.trim());
         setInfo("Password reset email sent. Check your inbox.");
+        toast.success("Password reset email sent.");
         return;
       }
-      onSuccess?.();
     } catch (err) {
       setError(err.message || "Authentication failed.");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (pendingEmail) {
+    return (
+      <div className="login-form">
+        <div className="login-confirm-box">
+          <div className="login-confirm-icon">✉</div>
+          <h2 className="login-confirm-title">Check your email</h2>
+          <p className="login-confirm-text">
+            We sent a confirmation link to <strong>{pendingEmail}</strong>.
+            Open the email from Supabase and click <strong>Confirm email address</strong> to activate your account.
+          </p>
+          <p className="login-confirm-hint">
+            After confirming, return here and sign in with your email and password.
+          </p>
+          <Btn
+            type="button"
+            variant="primary"
+            style={{ width: "100%", padding: "12px 16px", marginTop: 8 }}
+            onClick={() => { setPendingEmail(null); switchMode("login"); }}
+          >
+            Back to login
+          </Btn>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -129,7 +167,7 @@ export function LoginForm({ onSuccess }) {
         )}
 
         {error && <div className="login-error">{error}</div>}
-        {info && <div style={{ color: "var(--color-green)", fontSize: 12 }}>{info}</div>}
+        {info && <div className="login-info">{info}</div>}
 
         <Btn type="submit" variant="primary" disabled={loading} style={{ width: "100%", padding: "12px 16px", marginTop: 4 }}>
           {loading ? "Please wait..." : mode === "login" ? "Sign in" : mode === "register" ? "Create account" : "Send reset link"}

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase } from "../lib/supabase";
-import { isSupabaseConfigured } from "../lib/config";
+import { getAuthRedirectUrl, isSupabaseConfigured } from "../lib/config";
 
 const AuthContext = createContext(null);
 
@@ -27,10 +27,14 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) loadProfile(session.user.id);
       else setProfile(null);
+
+      if (event === "SIGNED_IN" && window.location.hash.includes("access_token")) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -43,6 +47,7 @@ export function AuthProvider({ children }) {
       password,
       options: {
         data: { username, display_name: displayName || username },
+        emailRedirectTo: getAuthRedirectUrl(),
       },
     });
     if (error) throw error;
@@ -53,7 +58,10 @@ export function AuthProvider({ children }) {
         display_name: displayName || username,
       }, { onConflict: "id" });
     }
-    return data;
+    return {
+      ...data,
+      needsEmailConfirmation: Boolean(data.user && !data.session),
+    };
   };
 
   const signIn = async (email, password) => {
@@ -72,7 +80,7 @@ export function AuthProvider({ children }) {
   const resetPassword = async (email) => {
     if (!supabase) throw new Error("Supabase is not configured.");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/`,
+      redirectTo: getAuthRedirectUrl(),
     });
     if (error) throw error;
   };
