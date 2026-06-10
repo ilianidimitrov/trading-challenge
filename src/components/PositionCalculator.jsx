@@ -4,6 +4,8 @@ import { fmt } from "../utils/format";
 import { calcPositionSize, formatQuantity } from "../utils/positionSize";
 import { Bar, Btn, Inp, Label, Sel } from "./ui";
 
+const QUICK_LEV = [5, 10, 15, 20, 25, 50];
+
 function Field({ label, children }) {
   return (
     <div>
@@ -36,17 +38,19 @@ export function PositionCalculator({ balance, activePhase }) {
   const [sl, setSl] = useState("");
   const [riskUsdt, setRiskUsdt] = useState("");
   const [marginUsdt, setMarginUsdt] = useState("");
+  const [leverage, setLeverage] = useState("20");
 
-  const margin = marginUsdt || (balance > 0 ? String(balance) : "");
+  const margin = marginUsdt || (balance > 0 ? String(round2(balance)) : "");
 
   const result = useMemo(
-    () => calcPositionSize({ dir, entry, sl, riskUsdt, marginUsdt: margin }),
-    [dir, entry, sl, riskUsdt, margin],
+    () => calcPositionSize({ dir, entry, sl, riskUsdt, marginUsdt: margin, leverage }),
+    [dir, entry, sl, riskUsdt, margin, leverage],
   );
 
   const phaseRisk = balance > 0 ? round2(balance * (activePhase.risk / 100)) : null;
-  const levOverLimit = result?.leverage && activePhase?.lev
-    ? result.leverage > parseMaxLev(activePhase.lev)
+  const levNum = parseFloat(leverage) || 0;
+  const levOverLimit = levNum > 0 && activePhase?.lev
+    ? levNum > parseMaxLev(activePhase.lev)
     : false;
 
   function applyPhaseRisk() {
@@ -57,12 +61,14 @@ export function PositionCalculator({ balance, activePhase }) {
     if (balance > 0) setMarginUsdt(String(round2(balance)));
   }
 
+  const lossOk = result && !result.error && Math.abs(result.actualLoss - result.riskUsdt) < 0.02;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: 16 }}>
         <Label color={C.dim}>Position Size Calculator</Label>
         <p style={{ color: C.muted, fontSize: 12, lineHeight: 1.6, marginTop: 8, marginBottom: 0 }}>
-          Enter entry, stop-loss, and max loss in USDT. The calculator returns notional size, quantity, and leverage based on your margin.
+          Set entry, stop-loss, max loss, margin, and leverage (as on Binance). Notional = margin × leverage, then sized so loss at SL matches your risk when possible.
         </p>
       </div>
 
@@ -85,7 +91,7 @@ export function PositionCalculator({ balance, activePhase }) {
               <Inp
                 value={riskUsdt}
                 onChange={e => setRiskUsdt(e.target.value)}
-                placeholder="5.00"
+                placeholder="0.25"
                 type="number"
                 step="0.01"
               />
@@ -96,12 +102,12 @@ export function PositionCalculator({ balance, activePhase }) {
               )}
             </div>
           </Field>
-          <Field label="Margin / Wallet (USDT)">
+          <Field label="Margin (USDT)">
             <div style={{ display: "flex", gap: 6 }}>
               <Inp
                 value={marginUsdt}
                 onChange={e => setMarginUsdt(e.target.value)}
-                placeholder={balance > 0 ? String(round2(balance)) : "100"}
+                placeholder={balance > 0 ? String(round2(balance)) : "5"}
                 type="number"
                 step="0.01"
               />
@@ -110,17 +116,41 @@ export function PositionCalculator({ balance, activePhase }) {
               )}
             </div>
           </Field>
+          <Field label="Leverage (×)">
+            <Inp
+              value={leverage}
+              onChange={e => setLeverage(e.target.value)}
+              placeholder="20"
+              type="number"
+              step="1"
+              min="1"
+            />
+          </Field>
         </div>
+
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+          {QUICK_LEV.map(l => (
+            <Btn
+              key={l}
+              onClick={() => setLeverage(String(l))}
+              variant={String(l) === leverage ? "primary" : "default"}
+              style={{ padding: "4px 10px", fontSize: 11 }}
+            >
+              {l}×
+            </Btn>
+          ))}
+        </div>
+
         {!marginUsdt && balance > 0 && (
           <div style={{ color: C.muted, fontSize: 11, marginTop: 8 }}>
-            Using wallet balance {fmt(balance)} for leverage — override margin if you allocate less.
+            Using wallet balance {fmt(balance)} as margin.
           </div>
         )}
       </div>
 
       <div style={{
         background: C.surface,
-        border: `1px solid ${result?.error ? C.redBorder : result?.notional ? C.greenBorder : C.border}`,
+        border: `1px solid ${result?.error ? C.redBorder : result?.notional ? (lossOk ? C.greenBorder : C.yellowBorder) : C.border}`,
         borderRadius: 8, padding: 16,
       }}>
         <Label color={C.dim}>Result</Label>
@@ -131,7 +161,7 @@ export function PositionCalculator({ balance, activePhase }) {
 
         {!result && !result?.error && (
           <div style={{ color: C.muted, fontSize: 13, marginTop: 12 }}>
-            Fill entry, stop-loss, and max loss to calculate.
+            Fill all fields including leverage to calculate.
           </div>
         )}
 
@@ -141,34 +171,55 @@ export function PositionCalculator({ balance, activePhase }) {
               label="Position Size (notional)"
               value={`${fmt(result.notional)} USDT`}
               accent={C.yellow}
-              sub="Total contract value on Binance Futures"
+              sub={`margin ${fmt(result.marginUsed)} × ${result.leverage}× (max ${fmt(result.maxNotional)} USDT)`}
             />
             <ResultRow
               label="Quantity"
               value={formatQuantity(result.quantity)}
               accent={C.bright}
-              sub="Base asset units (qty = risk ÷ |entry − SL|)"
+              sub="Set this size on Binance Futures"
             />
-            {result.leverage != null ? (
-              <ResultRow
-                label="Leverage"
-                value={`${result.leverage}×`}
-                accent={levOverLimit ? C.red : C.purple}
-                sub={`Notional ${fmt(result.notional)} ÷ margin ${fmt(result.marginUsdt)}`}
-              />
-            ) : (
-              <ResultRow
-                label="Leverage"
-                value="—"
-                sub="Enter margin to calculate leverage"
-              />
-            )}
+            <ResultRow
+              label="Leverage"
+              value={`${result.leverage}×`}
+              accent={levOverLimit ? C.red : C.purple}
+              sub="Your input — set the same on Binance"
+            />
+            <ResultRow
+              label="Margin used"
+              value={`${fmt(result.marginUsed)} USDT`}
+              accent={C.blue}
+              sub={`Of ${fmt(result.marginUsdt)} allocated`}
+            />
+            <ResultRow
+              label="Loss at SL"
+              value={`${fmt(result.actualLoss)} USDT`}
+              accent={lossOk ? C.green : C.yellow}
+              sub={lossOk
+                ? `Matches target risk ${fmt(result.riskUsdt)}`
+                : `Target was ${fmt(result.riskUsdt)} — adjust leverage or margin`}
+            />
             <ResultRow
               label="Stop distance"
               value={`${result.stopPct}%`}
               accent={C.red}
-              sub={`${result.stopDist} price units — loss at SL = ${fmt(result.riskUsdt)}`}
+              sub={`${result.stopDist} price units`}
             />
+
+            {result.warnings?.map((w, i) => (
+              <div
+                key={i}
+                style={{
+                  marginTop: 12, padding: 10, borderRadius: 6,
+                  background: "var(--color-yellow-dim)",
+                  border: `1px solid ${C.yellowBorder}`,
+                  color: C.yellow,
+                  fontSize: 12, lineHeight: 1.5,
+                }}
+              >
+                {w}
+              </div>
+            ))}
 
             {levOverLimit && (
               <div style={{
@@ -176,19 +227,19 @@ export function PositionCalculator({ balance, activePhase }) {
                 background: C.redDim, border: `1px solid ${C.redBorder}`,
                 color: C.red, fontSize: 12, lineHeight: 1.5,
               }}>
-                Leverage {result.leverage}× exceeds {activePhase.tag} limit ({activePhase.lev}). Reduce size or increase margin.
+                {result.leverage}× exceeds {activePhase.tag} limit ({activePhase.lev}).
               </div>
             )}
 
-            {result.leverage != null && !levOverLimit && activePhase && (
+            {levNum > 0 && !levOverLimit && activePhase && (
               <div style={{ marginTop: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                   <Label color={C.dim}>Leverage vs {activePhase.tag} max ({activePhase.lev})</Label>
-                  <Label color={C.green}>{Math.min(100, (result.leverage / parseMaxLev(activePhase.lev)) * 100).toFixed(0)}%</Label>
+                  <Label color={C.green}>{Math.min(100, (levNum / parseMaxLev(activePhase.lev)) * 100).toFixed(0)}%</Label>
                 </div>
                 <Bar
-                  pct={(result.leverage / parseMaxLev(activePhase.lev)) * 100}
-                  color={result.leverage / parseMaxLev(activePhase.lev) > 0.8 ? C.yellow : C.green}
+                  pct={(levNum / parseMaxLev(activePhase.lev)) * 100}
+                  color={levNum / parseMaxLev(activePhase.lev) > 0.8 ? C.yellow : C.green}
                   height={4}
                 />
               </div>
@@ -198,11 +249,17 @@ export function PositionCalculator({ balance, activePhase }) {
       </div>
 
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, padding: 16 }}>
-        <Label color={C.dim}>Formula</Label>
-        <div style={{ color: C.muted, fontSize: 12, lineHeight: 1.7, marginTop: 10, fontFamily: "monospace" }}>
-          <div>qty = risk ÷ |entry − SL|</div>
-          <div>notional = qty × entry</div>
-          <div>leverage = notional ÷ margin</div>
+        <Label color={C.dim}>How it works</Label>
+        <div style={{ color: C.muted, fontSize: 12, lineHeight: 1.7, marginTop: 10 }}>
+          <div style={{ marginBottom: 8 }}>
+            <strong style={{ color: C.text }}>1.</strong> Max notional = margin × leverage (what Binance allows).
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <strong style={{ color: C.text }}>2.</strong> Ideal size from risk: qty = loss ÷ |entry − SL|.
+          </div>
+          <div>
+            <strong style={{ color: C.text }}>3.</strong> If ideal size fits in max notional → exact risk. If not → position uses full margin×leverage and loss at SL will be higher; raise leverage to {result?.minLeverage ? `${result.minLeverage}×` : "match"}.
+          </div>
         </div>
       </div>
     </div>
