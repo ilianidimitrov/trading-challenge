@@ -15,6 +15,7 @@ import { Roadmap } from "./components/Roadmap";
 import { Journal } from "./components/Journal";
 import { Dashboard } from "./components/Dashboard";
 import { Leaderboard } from "./components/Leaderboard";
+import { PositionCalculator } from "./components/PositionCalculator";
 import { Profile } from "./components/Profile";
 import { LoginModal } from "./components/auth/LoginModal";
 import { LoginScreen } from "./components/auth/LoginScreen";
@@ -87,6 +88,10 @@ export default function App() {
               balance={balance}
               profileName={profileName}
             />
+          )}
+
+          {tab === "calculator" && (
+            <PositionCalculator balance={balance} activePhase={active} />
           )}
 
           {tab === "phases" && (
