@@ -46,7 +46,7 @@ export function Roadmap({ bal, trades = [] }) {
                     {done ? "✓" : p.id}
                   </div>
                   {i < PHASES.length - 1 && (
-                    <div style={{ width: 1, flex: 1, minHeight: 24, background: done ? C.green + "44" : C.border }} />
+                    <div style={{ width: 1, flex: 1, minHeight: 24, background: done ? C.greenBorder : C.border }} />
                   )}
                 </div>
                 <div style={{ paddingBottom: i < PHASES.length - 1 ? 18 : 0, flex: 1, minWidth: 0 }}>
@@ -102,7 +102,7 @@ export function Roadmap({ bal, trades = [] }) {
                 const edge   = p.wr - beWR;
                 const rc     = done ? C.green : active ? C.yellow : C.dim;
                 return (
-                  <tr key={p.id} style={{ background: active ? "#ffffff05" : "transparent" }}>
+                  <tr key={p.id} style={{ background: active ? C.rowHighlight : "transparent" }}>
                     <td style={{ padding: "8px 10px", color: rc, fontWeight: 700, borderBottom: i < 9 ? `1px solid ${C.border}` : "none" }}>{p.tag}</td>
                     <td style={{ padding: "8px 10px", color: active ? C.bright : C.text, borderBottom: i < 9 ? `1px solid ${C.border}` : "none", whiteSpace: "nowrap" }}>
                       {fmt(p.from)} → {fmt(p.to)}

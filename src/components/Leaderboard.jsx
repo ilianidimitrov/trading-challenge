@@ -146,7 +146,7 @@ export function Leaderboard({ onSelectUser }) {
                       onClick={() => onSelectUser?.(r.user_id)}
                       style={{
                         cursor: onSelectUser ? "pointer" : "default",
-                        background: isMe ? C.greenDim : i === 0 ? "#ffffff05" : "transparent",
+                        background: isMe ? C.greenDim : i === 0 ? C.rowHighlight : "transparent",
                         outline: isMe ? `2px solid ${C.green}44` : "none",
                       }}
                     >

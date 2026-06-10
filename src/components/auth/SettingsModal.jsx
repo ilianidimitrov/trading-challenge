@@ -96,7 +96,7 @@ export function SettingsModal({ open, onClose }) {
     <div
       onClick={onClose}
       style={{
-        position: "fixed", inset: 0, background: "#000000aa",
+        position: "fixed", inset: 0, background: C.overlay,
         display: "flex", alignItems: "center", justifyContent: "center",
         zIndex: 1000, padding: 20,
       }}

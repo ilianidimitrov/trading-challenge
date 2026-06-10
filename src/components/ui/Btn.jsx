@@ -3,7 +3,7 @@ import { C } from "../../constants/palette";
 export function Btn({ onClick, children, variant = "default", type = "button", disabled = false, ...rest }) {
   const styles = {
     default: { background: C.surface, border: `1px solid ${C.borderHi}`, color: C.text },
-    primary: { background: C.green, border: "none", color: "#000" },
+    primary: { background: C.green, border: "none", color: C.onAccent },
     danger:  { background: C.redDim, border: `1px solid ${C.red}44`, color: C.red },
   };
 

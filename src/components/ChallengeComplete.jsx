@@ -1,4 +1,4 @@
-import { TARGET_BALANCE } from "../constants/palette";
+import { C, TARGET_BALANCE } from "../constants/palette";
 import { fmt } from "../utils/format";
 import { Btn, Label } from "./ui";
 
@@ -26,7 +26,7 @@ export function ChallengeComplete({ open, balance, onClose }) {
     <div
       onClick={onClose}
       style={{
-        position: "fixed", inset: 0, background: "#000000cc",
+        position: "fixed", inset: 0, background: C.overlay,
         display: "flex", alignItems: "center", justifyContent: "center",
         zIndex: 2000, padding: 20,
       }}

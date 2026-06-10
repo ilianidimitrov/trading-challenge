@@ -2,6 +2,7 @@
 [data-theme="dark"] {
   --color-bg: #080810;
   --color-surface: #0d0d1a;
+  --color-surface-selected: #12122a;
   --color-border: #1c1c2e;
   --color-border-hi: #2e2e48;
   --color-muted: #3a3a5c;
@@ -10,34 +11,55 @@
   --color-bright: #e8e8f8;
   --color-green: #00d4aa;
   --color-green-dim: #00d4aa22;
+  --color-green-border: #00d4aa44;
   --color-red: #ff4d6d;
   --color-red-dim: #ff4d6d22;
+  --color-red-border: #ff4d6d55;
   --color-yellow: #f0c040;
+  --color-yellow-dim: #f0c04015;
+  --color-yellow-border: #f0c04055;
   --color-blue: #4d9fff;
   --color-purple: #9b72ff;
   --color-accent: #00d4aa;
+  --color-on-accent: #000000;
+  --color-row-highlight: rgba(255, 255, 255, 0.04);
+  --color-overlay: rgba(0, 0, 0, 0.66);
+  --color-shadow: rgba(0, 0, 0, 0.4);
+  --color-login-gradient-top: #10101f;
+  --color-login-gradient-bottom: #0d0d1a;
   --scrollbar-thumb: #1c1c2e;
   --sidebar-width: 220px;
 }
 
 [data-theme="light"] {
-  --color-bg: #f4f4f8;
+  --color-bg: #e8ecf4;
   --color-surface: #ffffff;
-  --color-border: #e0e0ea;
-  --color-border-hi: #c8c8d8;
-  --color-muted: #8888a0;
-  --color-dim: #666680;
-  --color-text: #2a2a40;
-  --color-bright: #12121e;
-  --color-green: #00a884;
-  --color-green-dim: #00a88422;
-  --color-red: #e03555;
-  --color-red-dim: #e0355522;
-  --color-yellow: #c9a020;
-  --color-blue: #2d7fd4;
-  --color-purple: #7b52d4;
-  --color-accent: #00a884;
-  --scrollbar-thumb: #d0d0dc;
+  --color-surface-selected: #f0f3fa;
+  --color-border: #d4dae8;
+  --color-border-hi: #b8c0d4;
+  --color-muted: #6b7288;
+  --color-dim: #4a5068;
+  --color-text: #1a1f2e;
+  --color-bright: #0a0d14;
+  --color-green: #059669;
+  --color-green-dim: #05966918;
+  --color-green-border: #05966944;
+  --color-red: #dc2626;
+  --color-red-dim: #dc262618;
+  --color-red-border: #dc262644;
+  --color-yellow: #b45309;
+  --color-yellow-dim: #f59e0b18;
+  --color-yellow-border: #f59e0b44;
+  --color-blue: #2563eb;
+  --color-purple: #7c3aed;
+  --color-accent: #059669;
+  --color-on-accent: #ffffff;
+  --color-row-highlight: rgba(0, 0, 0, 0.04);
+  --color-overlay: rgba(15, 23, 42, 0.45);
+  --color-shadow: rgba(15, 23, 42, 0.12);
+  --color-login-gradient-top: #ffffff;
+  --color-login-gradient-bottom: #f8fafc;
+  --scrollbar-thumb: #c8cedc;
 }
 
 * {
@@ -154,8 +176,17 @@ body {
 }
 
 .sidebar-nav-item-active {
-  background: var(--color-border);
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
   color: var(--color-bright);
+  font-weight: 700;
+}
+
+[data-theme="light"] .sidebar-nav-item:hover {
+  background: var(--color-surface-selected);
+}
+
+[data-theme="light"] .app-sidebar {
+  box-shadow: 1px 0 0 var(--color-border);
 }
 
 .app-main {
@@ -204,7 +235,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: #00000066;
+  background: var(--color-overlay);
 }
 
 .more-menu {
@@ -217,7 +248,7 @@ body {
   border-radius: 12px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  box-shadow: 0 -8px 32px #00000044;
+  box-shadow: 0 -8px 32px var(--color-shadow);
 }
 
 .more-menu-title {
@@ -269,7 +300,7 @@ body {
   border-radius: 8px;
   font-size: 13px;
   line-height: 1.4;
-  box-shadow: 0 8px 24px #00000044;
+  box-shadow: 0 8px 24px var(--color-shadow);
   animation: toast-in 0.2s ease;
 }
 
@@ -297,8 +328,8 @@ body {
 }
 
 .toast-warning {
-  background: #f0c04022;
-  border: 1px solid var(--color-yellow);
+  background: var(--color-yellow-dim);
+  border: 1px solid var(--color-yellow-border);
   color: var(--color-yellow);
 }
 
@@ -383,8 +414,18 @@ input[type="number"]::-webkit-inner-spin-button {
   opacity: 0;
 }
 
-input::placeholder {
-  color: #3a3a5c;
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-muted);
+}
+
+select option {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+input, select, textarea {
+  color-scheme: light dark;
 }
 
 /* Journal form grid */
@@ -431,9 +472,9 @@ input::placeholder {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  background: #080810;
+  background: var(--color-bg);
   font-family: 'Inter', system-ui, sans-serif;
-  color: #c8c8e0;
+  color: var(--color-text);
 }
 
 .login-glow {
@@ -448,7 +489,7 @@ input::placeholder {
   height: 420px;
   top: -120px;
   left: -80px;
-  background: #00d4aa18;
+  background: var(--color-green-dim);
 }
 
 .login-glow-b {
@@ -456,7 +497,7 @@ input::placeholder {
   height: 360px;
   bottom: -100px;
   right: -60px;
-  background: #4d9fff14;
+  background: color-mix(in srgb, var(--color-blue) 12%, transparent);
 }
 
 .login-shell {
@@ -481,9 +522,9 @@ input::placeholder {
   display: inline-block;
   padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid #2e2e48;
-  background: #0d0d1a88;
-  color: #00d4aa;
+  border: 1px solid var(--color-border-hi);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  color: var(--color-green);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -499,7 +540,7 @@ input::placeholder {
 }
 
 .login-title-muted {
-  color: #555577;
+  color: var(--color-dim);
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 3px;
@@ -507,7 +548,7 @@ input::placeholder {
 }
 
 .login-title-main {
-  color: #e8e8f8;
+  color: var(--color-bright);
   font-size: clamp(42px, 8vw, 64px);
   font-weight: 900;
   letter-spacing: -2px;
@@ -516,13 +557,13 @@ input::placeholder {
 }
 
 .login-arrow {
-  color: #3a3a5c;
+  color: var(--color-muted);
   font-weight: 300;
   margin: 0 8px;
 }
 
 .login-subtitle {
-  color: #555577;
+  color: var(--color-dim);
   font-size: 15px;
   line-height: 1.7;
   max-width: 420px;
@@ -539,12 +580,12 @@ input::placeholder {
   flex: 1;
   padding: 14px 16px;
   border-radius: 10px;
-  background: #0d0d1a;
-  border: 1px solid #1c1c2e;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
 }
 
 .login-stat-label {
-  color: #3a3a5c;
+  color: var(--color-muted);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1.2px;
@@ -571,9 +612,9 @@ input::placeholder {
   gap: 14px;
   padding: 14px 16px;
   border-radius: 8px;
-  background: #0d0d1a66;
-  border: 1px solid #1c1c2e;
-  border-left: 3px solid #00d4aa;
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-green);
 }
 
 .login-feature-tag {
@@ -585,14 +626,14 @@ input::placeholder {
 }
 
 .login-feature-title {
-  color: #e8e8f8;
+  color: var(--color-bright);
   font-size: 14px;
   font-weight: 700;
   margin-bottom: 2px;
 }
 
 .login-feature-desc {
-  color: #555577;
+  color: var(--color-dim);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -606,14 +647,14 @@ input::placeholder {
 .login-card {
   padding: 28px;
   border-radius: 16px;
-  background: linear-gradient(180deg, #10101f 0%, #0d0d1a 100%);
-  border: 1px solid #2e2e48;
-  box-shadow: 0 24px 64px #00000066, 0 0 0 1px #ffffff06 inset;
+  background: linear-gradient(180deg, var(--color-login-gradient-top) 0%, var(--color-login-gradient-bottom) 100%);
+  border: 1px solid var(--color-border-hi);
+  box-shadow: 0 16px 48px var(--color-shadow);
 }
 
 .login-footer {
   text-align: center;
-  color: #3a3a5c;
+  color: var(--color-muted);
   font-size: 11px;
   letter-spacing: 0.3px;
 }
@@ -630,8 +671,8 @@ input::placeholder {
   gap: 6px;
   padding: 4px;
   border-radius: 10px;
-  background: #080810;
-  border: 1px solid #1c1c2e;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
 }
 
 .login-tab {
@@ -639,7 +680,7 @@ input::placeholder {
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: #555577;
+  color: var(--color-dim);
   font-size: 13px;
   font-weight: 700;
   font-family: inherit;
@@ -648,13 +689,13 @@ input::placeholder {
 }
 
 .login-tab-active {
-  background: #1c1c2e;
-  color: #e8e8f8;
-  box-shadow: 0 1px 0 #ffffff08 inset;
+  background: var(--color-border);
+  color: var(--color-bright);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-bright) 8%, transparent) inset;
 }
 
 .login-form-hint {
-  color: #555577;
+  color: var(--color-dim);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -672,7 +713,7 @@ input::placeholder {
 }
 
 .login-field-label {
-  color: #3a3a5c;
+  color: var(--color-muted);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.8px;
@@ -680,7 +721,7 @@ input::placeholder {
 }
 
 .login-required {
-  color: #00d4aa;
+  color: var(--color-green);
   margin-left: 3px;
 }
 
@@ -688,9 +729,9 @@ input::placeholder {
   width: 100%;
   padding: 11px 14px;
   border-radius: 8px;
-  border: 1px solid #2e2e48;
-  background: #080810;
-  color: #e8e8f8;
+  border: 1px solid var(--color-border-hi);
+  background: var(--color-bg);
+  color: var(--color-bright);
   font-size: 14px;
   font-family: inherit;
   outline: none;
@@ -698,16 +739,16 @@ input::placeholder {
 }
 
 .login-input:focus {
-  border-color: #00d4aa66;
-  box-shadow: 0 0 0 3px #00d4aa18;
+  border-color: var(--color-green-border);
+  box-shadow: 0 0 0 3px var(--color-green-dim);
 }
 
 .login-error {
   padding: 10px 12px;
   border-radius: 8px;
-  background: #ff4d6d18;
-  border: 1px solid #ff4d6d44;
-  color: #ff4d6d;
+  background: var(--color-red-dim);
+  border: 1px solid var(--color-red-border);
+  color: var(--color-red);
   font-size: 12px;
   line-height: 1.5;
 }

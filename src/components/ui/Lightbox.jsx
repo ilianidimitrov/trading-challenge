@@ -1,3 +1,5 @@
+import { C } from "../../constants/palette";
+
 export function Lightbox({ src, onClose }) {
   if (!src) return null;
 
@@ -7,7 +9,7 @@ export function Lightbox({ src, onClose }) {
       onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 1500,
-        background: "#000000dd", display: "flex",
+        background: C.overlay, display: "flex",
         alignItems: "center", justifyContent: "center", padding: 20,
       }}
     >

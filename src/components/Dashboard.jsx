@@ -77,8 +77,8 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {discipline.alerts.map((a, i) => (
             <div key={i} style={{
-              background: a.level === "danger" ? C.redDim : "#f0c04015",
-              border: `1px solid ${a.level === "danger" ? C.red + "55" : C.yellow + "55"}`,
+              background: a.level === "danger" ? C.redDim : "var(--color-yellow-dim)",
+              border: `1px solid ${a.level === "danger" ? C.redBorder : C.yellowBorder}`,
               borderRadius: 8, padding: "12px 16px",
             }}>
               <div style={{ color: a.level === "danger" ? C.red : C.yellow, fontWeight: 700, fontSize: 13 }}>

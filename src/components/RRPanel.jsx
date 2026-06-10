@@ -84,7 +84,7 @@ export function RRPanel({ phase }) {
               <div key={i} style={{
                 flex: 1, height: 40, borderRadius: 4,
                 background: win ? C.greenDim : C.redDim,
-                border: `1px solid ${win ? C.green + "44" : C.red + "44"}`,
+                border: `1px solid ${win ? C.greenBorder : C.redBorder}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 <span style={{ color: win ? C.green : C.red, fontSize: 11, fontWeight: 700 }}>

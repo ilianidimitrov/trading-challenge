@@ -32,7 +32,7 @@ export function PhaseCard({ phase, bal, selected, onSelect }) {
     <div
       onClick={() => onSelect(phase.id)}
       style={{
-        background: selected ? "#0d0d20" : C.surface,
+        background: selected ? C.surfaceSelected : C.surface,
         border: `1px solid ${selected ? C.borderHi : C.border}`,
         borderLeft: `3px solid ${statusColor}`,
         borderRadius: 8, padding: 18, cursor: "pointer",

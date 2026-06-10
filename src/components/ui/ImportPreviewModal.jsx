@@ -1,3 +1,4 @@
+import { C } from "../../constants/palette";
 import { Btn, Label } from "./index";
 
 export function ImportPreviewModal({ open, trades, onConfirm, onCancel }) {
@@ -7,7 +8,7 @@ export function ImportPreviewModal({ open, trades, onConfirm, onCancel }) {
     <div
       onClick={onCancel}
       style={{
-        position: "fixed", inset: 0, background: "#000000aa",
+        position: "fixed", inset: 0, background: C.overlay,
         display: "flex", alignItems: "center", justifyContent: "center",
         zIndex: 1000, padding: 20,
       }}
