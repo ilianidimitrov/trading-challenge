@@ -11,21 +11,11 @@ import { enableNotifications } from "../hooks/useKillSwitchNotifications";
 import { EquityCurve } from "./charts/EquityCurve";
 import { CalendarHeatmap } from "./charts/CalendarHeatmap";
 import { ChallengeComplete, shouldShowChallengeComplete, markChallengeCompleteShown } from "./ChallengeComplete";
-import { Bar, Btn, Cell, Inp, Label } from "./ui";
+import { Bar, Btn, Cell, Label } from "./ui";
 import { EmptyState } from "./ui/EmptyState";
 
 function tradeTimestamp(t) {
   return t.tradeAtMs || t.createdAt || 0;
-}
-
-function filterByDateRange(trades, from, to) {
-  if (!from && !to) return trades;
-  const fromMs = from ? new Date(from).getTime() : 0;
-  const toMs = to ? new Date(to + "T23:59:59").getTime() : Infinity;
-  return trades.filter(t => {
-    const ts = tradeTimestamp(t);
-    return ts >= fromMs && ts <= toMs;
-  });
 }
 
 function monthlyRecap(trades) {
@@ -39,8 +29,6 @@ function monthlyRecap(trades) {
 }
 
 export function Dashboard({ trades, balance, profileName = "Trader" }) {
-  const [exportFrom, setExportFrom] = useState("");
-  const [exportTo, setExportTo] = useState("");
   const [showComplete, setShowComplete] = useState(() => shouldShowChallengeComplete(balance));
 
   const stats = computeStats(trades);
@@ -55,20 +43,13 @@ export function Dashboard({ trades, balance, profileName = "Trader" }) {
     setShowComplete(false);
   }
 
-  function getExportTrades() {
-    return filterByDateRange(trades, exportFrom, exportTo);
-  }
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <ChallengeComplete open={showComplete} balance={balance} onClose={handleCloseComplete} />
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <Inp type="date" value={exportFrom} onChange={e => setExportFrom(e.target.value)} style={{ width: "auto" }} />
-        <Label color={C.muted}>to</Label>
-        <Inp type="date" value={exportTo} onChange={e => setExportTo(e.target.value)} style={{ width: "auto" }} />
-        <Btn onClick={() => exportCsvReport(getExportTrades(), balance)} variant="default" disabled={!trades.length}>Export CSV</Btn>
-        <Btn onClick={() => exportPdfReport(getExportTrades(), balance, profileName)} variant="default" disabled={!trades.length}>Export PDF</Btn>
+        <Btn onClick={() => exportCsvReport(trades, balance)} variant="default" disabled={!trades.length}>Export CSV</Btn>
+        <Btn onClick={() => exportPdfReport(trades, balance, profileName)} variant="default" disabled={!trades.length}>Export PDF</Btn>
         <Btn onClick={enableNotifications} variant="default">Enable Alerts</Btn>
         <Label color={C.muted}>{EXCHANGE} · USDT PnL</Label>
       </div>
