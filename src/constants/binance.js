@@ -13,4 +13,13 @@ export const BINANCE_PAIRS = [
 ];
 
 export const DEFAULT_MARKET = "USDT-M";
-export const DEFAULT_LEVERAGE = 10;
+export const DEFAULT_LEVERAGE = 20;
+
+/** Quick-pick leverage values for journal & calculator (Binance min notional needs higher lev on small wallets) */
+export const LEVERAGE_PRESETS = [10, 15, 20, 25, 50, 75, 125];
+
+export function leverageFromPhase(phase) {
+  const nums = phase?.lev?.match(/\d+/g)?.map(Number);
+  if (!nums?.length) return DEFAULT_LEVERAGE;
+  return Math.max(...nums);
+}

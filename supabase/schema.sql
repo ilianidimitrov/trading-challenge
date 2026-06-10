@@ -63,7 +63,7 @@ select
   p.id as user_id,
   p.username,
   p.display_name,
-  coalesce(sum(t.pnl), 0) + 5 as balance,
+  coalesce(sum(t.pnl), 0) + 100 as balance,
   count(t.id) as trade_count,
   case
     when count(t.id) > 0
@@ -78,15 +78,15 @@ select
     limit 1
   ) as avg_rr,
   case
-    when coalesce(sum(t.pnl), 0) + 5 >= 75000  then 'P10'
-    when coalesce(sum(t.pnl), 0) + 5 >= 55000  then 'P09'
-    when coalesce(sum(t.pnl), 0) + 5 >= 35000  then 'P08'
-    when coalesce(sum(t.pnl), 0) + 5 >= 15000  then 'P07'
-    when coalesce(sum(t.pnl), 0) + 5 >= 5000   then 'P06'
-    when coalesce(sum(t.pnl), 0) + 5 >= 1000   then 'P05'
-    when coalesce(sum(t.pnl), 0) + 5 >= 300    then 'P04'
-    when coalesce(sum(t.pnl), 0) + 5 >= 100    then 'P03'
-    when coalesce(sum(t.pnl), 0) + 5 >= 25     then 'P02'
+    when coalesce(sum(t.pnl), 0) + 100 >= 65000  then 'P10'
+    when coalesce(sum(t.pnl), 0) + 100 >= 40000  then 'P09'
+    when coalesce(sum(t.pnl), 0) + 100 >= 25000  then 'P08'
+    when coalesce(sum(t.pnl), 0) + 100 >= 16000  then 'P07'
+    when coalesce(sum(t.pnl), 0) + 100 >= 10000  then 'P06'
+    when coalesce(sum(t.pnl), 0) + 100 >= 6500   then 'P05'
+    when coalesce(sum(t.pnl), 0) + 100 >= 4000   then 'P04'
+    when coalesce(sum(t.pnl), 0) + 100 >= 2500   then 'P03'
+    when coalesce(sum(t.pnl), 0) + 100 >= 1500   then 'P02'
     else 'P01'
   end as current_phase,
   max(t.created_at) as last_trade_at

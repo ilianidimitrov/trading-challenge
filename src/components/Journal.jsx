@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { C } from "../constants/palette";
 import { PHASES } from "../constants/phases";
-import { BINANCE_PAIRS, MARKET_TYPES, EXCHANGE, DEFAULT_LEVERAGE } from "../constants/binance";
+import { BINANCE_PAIRS, MARKET_TYPES, EXCHANGE, LEVERAGE_PRESETS, leverageFromPhase } from "../constants/binance";
 import { createEmptyTradeForm, mergeSetupTypes } from "../types/trade";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
@@ -118,7 +118,7 @@ export function Journal({
 
   function openNew() {
     setEditingId(null);
-    setForm(createEmptyTradeForm(activePhase.risk, DEFAULT_LEVERAGE));
+    setForm(createEmptyTradeForm(activePhase.risk, leverageFromPhase(activePhase)));
     setPartialOpen(false);
     setErrors([]);
     setWarnings(discipline.canTrade ? [] : discipline.alerts.filter(a => a.level === "danger").map(a => a.text));
@@ -282,8 +282,20 @@ export function Journal({
                 <option>LONG</option><option>SHORT</option>
               </Sel>
             </Field>
-            <Field label="Leverage">
-              <Inp value={form.leverage} onChange={e => sf("leverage", e.target.value)} placeholder="10" type="number" step="1" />
+            <Field label={`Leverage (${activePhase.lev} in ${activePhase.tag})`}>
+              <Inp value={form.leverage} onChange={e => sf("leverage", e.target.value)} placeholder="20" type="number" step="1" min="1" />
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+                {LEVERAGE_PRESETS.map(l => (
+                  <Btn
+                    key={l}
+                    onClick={() => sf("leverage", String(l))}
+                    variant={String(l) === form.leverage ? "primary" : "default"}
+                    style={{ padding: "4px 10px", fontSize: 11 }}
+                  >
+                    {l}×
+                  </Btn>
+                ))}
+              </div>
             </Field>
             <Field label="Entry Price">
               <Inp value={form.entry} onChange={e => sf("entry", e.target.value)} placeholder="65000.00" type="number" step="any" />
